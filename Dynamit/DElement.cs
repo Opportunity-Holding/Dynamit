@@ -19,10 +19,10 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class ScKeyValuePair
+    public abstract class DElement
     {
-        public readonly ScDictionary Dictionary;
-        public readonly string Key;
+        public readonly DList List;
+        public readonly int Index;
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
 
@@ -66,10 +66,10 @@ namespace Dynamit
 
         public ulong? ValueObjectNo;
 
-        protected ScKeyValuePair(ScDictionary dict, string key, object value = null)
+        protected DElement(DList list, int index, object value = null)
         {
-            Dictionary = dict;
-            Key = key;
+            List = list;
+            Index = index;
             ValueObjectNo = MakeValueObject(value);
         }
 
@@ -84,33 +84,33 @@ namespace Dynamit
                 switch (valueType)
                 {
                     case ValueTypes.String:
-                        return new String1 {content = obj}.GetObjectNo();
+                        return new String1 { content = obj }.GetObjectNo();
                     case ValueTypes.Bool:
-                        return new Bool1 {content = obj}.GetObjectNo();
+                        return new Bool1 { content = obj }.GetObjectNo();
                     case ValueTypes.Int:
-                        return new Int1 {content = obj}.GetObjectNo();
+                        return new Int1 { content = obj }.GetObjectNo();
                     case ValueTypes.Long:
-                        return new Long1 {content = obj}.GetObjectNo();
+                        return new Long1 { content = obj }.GetObjectNo();
                     case ValueTypes.Decimal:
-                        return new Decimal1 {content = obj}.GetObjectNo();
+                        return new Decimal1 { content = obj }.GetObjectNo();
                     case ValueTypes.DateTime:
-                        return new DateTime1 {content = obj}.GetObjectNo();
+                        return new DateTime1 { content = obj }.GetObjectNo();
                 }
             }
-            else if (value is string) return new String1 {content = value}.GetObjectNo();
-            else if (value is bool) return new Bool1 {content = value}.GetObjectNo();
-            else if (value is byte) return new Byte1 {content = value}.GetObjectNo();
-            else if (value is DateTime) return new DateTime1 {content = value}.GetObjectNo();
-            else if (value is decimal) return new Decimal1 {content = value}.GetObjectNo();
-            else if (value is double) return new Double1 {content = value}.GetObjectNo();
-            else if (value is int) return new Int1 {content = value}.GetObjectNo();
-            else if (value is long) return new Long1 {content = value}.GetObjectNo();
-            else if (value is sbyte) return new Sbyte1 {content = value}.GetObjectNo();
-            else if (value is short) return new Short1 {content = value}.GetObjectNo();
-            else if (value is float) return new Single1 {content = value}.GetObjectNo();
-            else if (value is uint) return new Uint1 {content = value}.GetObjectNo();
-            else if (value is ulong) return new Ulong1 {content = value}.GetObjectNo();
-            else if (value is ushort) return new Ushort1 {content = value}.GetObjectNo();
+            else if (value is string) return new String1 { content = value }.GetObjectNo();
+            else if (value is bool) return new Bool1 { content = value }.GetObjectNo();
+            else if (value is byte) return new Byte1 { content = value }.GetObjectNo();
+            else if (value is DateTime) return new DateTime1 { content = value }.GetObjectNo();
+            else if (value is decimal) return new Decimal1 { content = value }.GetObjectNo();
+            else if (value is double) return new Double1 { content = value }.GetObjectNo();
+            else if (value is int) return new Int1 { content = value }.GetObjectNo();
+            else if (value is long) return new Long1 { content = value }.GetObjectNo();
+            else if (value is sbyte) return new Sbyte1 { content = value }.GetObjectNo();
+            else if (value is short) return new Short1 { content = value }.GetObjectNo();
+            else if (value is float) return new Single1 { content = value }.GetObjectNo();
+            else if (value is uint) return new Uint1 { content = value }.GetObjectNo();
+            else if (value is ulong) return new Ulong1 { content = value }.GetObjectNo();
+            else if (value is ushort) return new Ushort1 { content = value }.GetObjectNo();
             return null;
         }
 
@@ -120,7 +120,7 @@ namespace Dynamit
             if (valueObject != null)
             {
                 Db.Delete(valueObject);
-                Dictionary.Update();
+                List.Update();
             }
         }
     }

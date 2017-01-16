@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Starcounter;
 
 namespace Dynamit
 {
@@ -18,6 +20,22 @@ namespace Dynamit
                 where type.IsSubclassOf(baseType)
                 select type;
         }
+
+        public static T GetReference<T>(this ulong? objectNo) where T : class
+        {
+            return DbHelper.FromID(objectNo.GetValueOrDefault()) as T;
+        }
+
+        internal static TAttribute GetAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
+        {
+            return type?.GetCustomAttributes<TAttribute>().FirstOrDefault();
+        }
+
+        internal static bool HasAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
+        {
+            return (type?.GetCustomAttributes<TAttribute>().Any()).GetValueOrDefault();
+        }
+
 
         internal static object GetStaticType(dynamic value, out ValueTypes valueType)
         {

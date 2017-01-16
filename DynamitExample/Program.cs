@@ -1,6 +1,4 @@
-﻿using System;
-using Dynamit;
-using Dynamit.ValueObjects;
+﻿using Dynamit;
 using Starcounter;
 
 namespace DynamitExample
@@ -9,47 +7,77 @@ namespace DynamitExample
     {
         public static void Main()
         {
-            foreach (var x in DB.All<ValueObject>())
-                Db.Transact(() => x.Delete());
-
             DynamitConfig.Init();
-
-            foreach (var x in DB.All<ScKeyValuePair>())
+            foreach (var x in DB.All<DDictionary>())
                 Db.Transact(() => x.Delete());
 
-            foreach (var x in DB.All<ScDictionary>())
-                Db.Transact(() => x.Delete());
-
-            var dict = Db.Transact(() => new MyDict
+            var dict1 = Db.Transact(() => new MyDict
             {
-                ["Bananas"] = 132.321,
-                ["Swoopi"] = DateTime.Now,
-                ["Grou"] = "Hello"
+                ["Name"] = "Kalle",
+                ["Age"] = 28,
+                ["Group"] = "ABC",
+                ["ID"] = 1
             });
 
+            var dict2 = Db.Transact(() => new MyDict
+            {
+                ["Name"] = "Anders",
+                ["Age"] = 32,
+                ["Group"] = "ABC",
+                ["ID"] = 2
+            });
+            var dict3 = Db.Transact(() => new MyDict
+            {
+                ["Name"] = "Lisa",
+                ["Age"] = 28,
+                ["Group"] = "BCD",
+                ["ID"] = 3
+            });
+            var dict4 = Db.Transact(() => new MyDict
+            {
+                ["Name"] = "Lotta",
+                ["Age"] = 31,
+                ["Group"] = "ABC",
+                ["ID"] = 4
+            });
+
+
+            var a = Finder.DDictionary<MyDict>(new TDictionary
+            {
+                ["Age"] = 28
+            });
+
+            var a1 = Finder.DDictionary<MyDict>(new TDictionary
+            {
+                ["Age"] = 28,
+                ["Group"] = "BCD"
+            });
+
+            var all = Finder.DDictionary<MyDict>();
+
+            var b = Finder.DDictionary<MyDict>(
+                dict => dict.SafeGet("Age") > 28,
+                dict => dict.ContainsKey("Group") && dict["Group"] == "BCD"
+            );
+
+
             var c = "";
-
         }
     }
 
-    public class MyPair : ScKeyValuePair
+    public class MyPair : DKeyValuePair
     {
-        public MyPair(ScDictionary dict, string key, object value = null) : base(dict, key, value)
+        public MyPair(DDictionary dict, string key, object value = null) : base(dict, key, value)
         {
         }
     }
 
-    public class MyDict : ScDictionary
+    [DDictionary(typeof(MyPair))]
+    public class MyDict : DDictionary
     {
-        public MyDict() : base(typeof(MyPair))
-        {
-        }
-
-        protected override ScKeyValuePair NewKeyPair(ScDictionary dict, string key, object value = null)
+        protected override DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null)
         {
             return new MyPair(dict, key, value);
         }
     }
-
-
 }

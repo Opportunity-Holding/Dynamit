@@ -8,7 +8,7 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class ScDictionary : IDictionary<string, object>
+    public abstract class DObject : IDictionary<string, object>
     {
         [Transient]
         private Dictionary<string, object> _dict;
@@ -31,13 +31,13 @@ namespace Dynamit
             }
         }
 
-        public ScDictionary(Type keyValuePairTable)
+        public DObject()
         {
-            KvpTable = keyValuePairTable.FullName;
+            KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
         }
 
-        internal IEnumerable<ScKeyValuePair> KeyValuePairs =>
-            Db.SQL<ScKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this);
+        internal IEnumerable<DKeyValuePair> KeyValuePairs =>
+            Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this);
 
         private Dictionary<string, object> MakeDict()
         {
@@ -47,7 +47,7 @@ namespace Dynamit
             );
         }
 
-        protected abstract ScKeyValuePair NewKeyPair(ScDictionary dict, string key, object value = null);
+        protected abstract DKeyValuePair NewKeyPair(DObject dict, string key, object value = null);
 
         public void Update()
         {
@@ -75,7 +75,10 @@ namespace Dynamit
         public void Clear()
         {
             foreach (var pair in KeyValuePairs)
+            {
+                pair.Clear();
                 pair.Delete();
+            }
             Update();
         }
 
@@ -112,7 +115,7 @@ namespace Dynamit
         {
             try
             {
-                var obj = DB.Get<ScKeyValuePair>("Dictionary", this, "Key", key);
+                var obj = DB.Get<DKeyValuePair>("Dictionary", this, "Key", key);
                 obj?.Delete();
                 Update();
                 return true;
@@ -140,7 +143,7 @@ namespace Dynamit
                     ValueTypes valueType;
                     value = Helper.GetStaticType(value, out valueType);
                 }
-                var dbKvp = Db.SQL<ScKeyValuePair>(
+                var dbKvp = Db.SQL<DKeyValuePair>(
                     $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?", this, key
                 ).First;
                 if (dbKvp == null)
