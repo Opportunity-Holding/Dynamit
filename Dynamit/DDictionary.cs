@@ -15,7 +15,6 @@ namespace Dynamit
         public DDictionary()
         {
             KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
-            Console.WriteLine($"Created new DDict at {DateTime.Now:O}");
         }
 
         public IEnumerable<DKeyValuePair> KeyValuePairs =>
@@ -39,15 +38,10 @@ namespace Dynamit
 
         public void Add(KeyValuePair<string, object> item)
         {
-            Console.WriteLine($"BEGAN ADD at {DateTime.Now:O}");
-
             if (item.Value == null) return;
             if (ContainsKey(item.Key))
                 throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
             NewKeyPair(this, item.Key, item.Value);
-
-            Console.WriteLine($"DONE ADD at {DateTime.Now:O}");
-
         }
 
         public void Clear()
@@ -128,9 +122,6 @@ namespace Dynamit
             }
             set
             {
-                Console.WriteLine($"BEGAN INDEXER at {DateTime.Now:O}");
-
-
                 if (value is IDynamicMetaObjectProvider)
                 {
                     ValueTypes valueType;
@@ -154,8 +145,6 @@ namespace Dynamit
                     dbKvp.Delete();
                     NewKeyPair(this, key, value);
                 }
-
-                Console.WriteLine($"DONE INDEXER at {DateTime.Now:O}");
             }
         }
 

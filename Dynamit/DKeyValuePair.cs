@@ -43,11 +43,9 @@ namespace Dynamit
 
         protected DKeyValuePair(DDictionary dict, string key, object value = null)
         {
-            Console.WriteLine($"Begin create new DKvp at {DateTime.Now:O}");
             Dictionary = dict;
             Key = key;
             Value = value;
-            Console.WriteLine($"Done created new DKvp at {DateTime.Now:O}");
         }
 
         private static ulong? MakeValueObject(dynamic value)

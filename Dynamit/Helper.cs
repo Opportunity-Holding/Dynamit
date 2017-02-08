@@ -41,8 +41,6 @@ namespace Dynamit
 
         internal static object GetStaticType(dynamic value, out ValueTypes valueType)
         {
-            Console.WriteLine($"BEGAN GETSTATICTYPE at {DateTime.Now:O}");
-
             valueType = ValueTypes.String;
             object o;
             try
@@ -100,8 +98,6 @@ namespace Dynamit
                     }
                 }
             }
-            Console.WriteLine($"DONE GETSTATICTYPE at {DateTime.Now:O}");
-
             return o;
         }
     }
