@@ -51,12 +51,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes.cs" />
-    <Compile Include="DObject.cs" />
+    <Compile Include="DValue.cs" />
     <Compile Include="DynamitConfig.cs" />
     <Compile Include="DArray.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="DElement.cs" />
     <Compile Include="DList.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Finder.cs" />
     <Compile Include="TDictionary.cs" />
     <Compile Include="ValueObjects\Bool\Bool1.cs" />
@@ -97,7 +98,7 @@
 cd "$(ProjectDir)"
 
 @echo off
-For /f "tokens=2-4 delims=/ " %25%25a in ('date /t') do (set mydate=%25%25c-%25%25a-%25%25b)
+For /f "tokens=1-2 delims=/ " %25%25a in ('date /t') do (set mydate=%25%25a)
 For /f "tokens=1-2 delims=/:" %25%25a in ("%25TIME%25") do (set mytime=%25%25a%25%25b)
 
 C:\Users\erik\bin\7za.exe a -tzip "$(ProjectName).zip" "$(OutDir)".\* "$(SolutionDir)\DynamitExample"

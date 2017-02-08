@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Starcounter;
 
 namespace Dynamit
@@ -21,7 +23,7 @@ namespace Dynamit
                 select type;
         }
 
-        public static T GetReference<T>(this ulong? objectNo) where T : class
+        internal static T GetReference<T>(this ulong? objectNo) where T : class
         {
             return DbHelper.FromID(objectNo.GetValueOrDefault()) as T;
         }
@@ -39,6 +41,8 @@ namespace Dynamit
 
         internal static object GetStaticType(dynamic value, out ValueTypes valueType)
         {
+            Console.WriteLine($"BEGAN GETSTATICTYPE at {DateTime.Now:O}");
+
             valueType = ValueTypes.String;
             object o;
             try
@@ -96,6 +100,8 @@ namespace Dynamit
                     }
                 }
             }
+            Console.WriteLine($"DONE GETSTATICTYPE at {DateTime.Now:O}");
+
             return o;
         }
     }

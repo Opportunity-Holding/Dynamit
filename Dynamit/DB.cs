@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
+using Starcounter.Metadata;
 
 namespace Dynamit
 {
@@ -100,13 +101,14 @@ namespace Dynamit
         /// Tries to create an index in the database.
         /// </summary>
         /// <param name="columns">The names of the columns included in the index</param>
-        public static void CreateIndex(string table, params string[] columns)
+        public static void CreateIndex(System.Type table, params string[] columns)
         {
-            var nameHead = table;
+            var nameHead = "DYNAMIT_GENERATED_INDEX_FOR_" + table.FullName.Replace('.', '_');
             var nameTail = string.Join("_", columns);
             try
             {
-                Db.SQL($"CREATE INDEX {nameHead}_{nameTail} ON {table} ({string.Join(",", columns)})");
+                var str = $"CREATE INDEX {nameHead}__{nameTail} ON {table.FullName} ({string.Join(",", columns)})";
+                Db.SQL(str);
             }
             catch
             {

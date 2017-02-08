@@ -10,53 +10,26 @@ namespace Dynamit
     [Database]
     public abstract class DDictionary : IDictionary<string, object>
     {
-        [Transient]
-        private Dictionary<string, object> _dict;
-
         public string KvpTable { get; }
-
-        public bool IsUpdated { get; set; }
-
-        private Dictionary<string, object> Dict
-        {
-            get
-            {
-                if (IsUpdated)
-                {
-                    var d = MakeDict();
-                    Db.Transact(() => { IsUpdated = false; });
-                    return _dict = d;
-                }
-                return _dict ?? (_dict = MakeDict());
-            }
-        }
 
         public DDictionary()
         {
             KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
+            Console.WriteLine($"Created new DDict at {DateTime.Now:O}");
         }
 
         public IEnumerable<DKeyValuePair> KeyValuePairs =>
             Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this);
 
-        private Dictionary<string, object> MakeDict()
-        {
-            return KeyValuePairs.ToDictionary(
-                pair => (string) pair.Key,
-                (dynamic pair) => (object) pair.Value
-            );
-        }
+        private IEnumerable<KeyValuePair<string, object>> _keyValuePairs =>
+            Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this)
+                .Select(p => new KeyValuePair<string, object>(p.Key, p.Value));
 
         protected abstract DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null);
 
-        public void Update()
-        {
-            Db.Transact(() => { IsUpdated = true; });
-        }
-
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            return Dict.GetEnumerator();
+            return _keyValuePairs.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -66,10 +39,15 @@ namespace Dynamit
 
         public void Add(KeyValuePair<string, object> item)
         {
-            if (Dict.ContainsKey(item.Key))
+            Console.WriteLine($"BEGAN ADD at {DateTime.Now:O}");
+
+            if (item.Value == null) return;
+            if (ContainsKey(item.Key))
                 throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
             NewKeyPair(this, item.Key, item.Value);
-            Update();
+
+            Console.WriteLine($"DONE ADD at {DateTime.Now:O}");
+
         }
 
         public void Clear()
@@ -79,12 +57,17 @@ namespace Dynamit
                 pair.Clear();
                 pair.Delete();
             }
-            Update();
+        }
+
+        public void ClearAndDelete()
+        {
+            Clear();
+            this.Delete();
         }
 
         public bool Contains(KeyValuePair<string, object> item)
         {
-            return Dict.Contains(item);
+            return _keyValuePairs.Contains(item);
         }
 
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
@@ -97,13 +80,14 @@ namespace Dynamit
             return Remove(item.Key);
         }
 
-        public int Count => Dict.Count;
+        public int Count => KeyValuePairs.Count();
 
         public bool IsReadOnly => false;
 
         public bool ContainsKey(string key)
         {
-            return Dict.ContainsKey(key);
+            return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
+                                         "WHERE t.Dictionary =? AND t.Key =?", this, key).First != null;
         }
 
         public void Add(string key, object value)
@@ -117,7 +101,6 @@ namespace Dynamit
             {
                 var obj = DB.Get<DKeyValuePair>("Dictionary", this, "Key", key);
                 obj?.Delete();
-                Update();
                 return true;
             }
             catch
@@ -128,17 +111,27 @@ namespace Dynamit
 
         public bool TryGetValue(string key, out object value)
         {
-            return Dict.TryGetValue(key, out value);
+            var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
+                                              "WHERE t.Dictionary =? AND t.Key =? ", this, key).First;
+            value = match?.Value;
+            return match != null;
         }
 
         public dynamic this[string key]
         {
-            get { return Dict[key]; }
+            get
+            {
+                var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
+                                                  "WHERE t.Dictionary =? AND t.Key =? ", this, key).First;
+                if (match == null) throw new KeyNotFoundException();
+                return match.Value;
+            }
             set
             {
-                if (!Dict.ContainsKey(key))
-                    Add(key, value);
-                else if (value is IDynamicMetaObjectProvider)
+                Console.WriteLine($"BEGAN INDEXER at {DateTime.Now:O}");
+
+
+                if (value is IDynamicMetaObjectProvider)
                 {
                     ValueTypes valueType;
                     value = Helper.GetStaticType(value, out valueType);
@@ -146,21 +139,34 @@ namespace Dynamit
                 var dbKvp = Db.SQL<DKeyValuePair>(
                     $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?", this, key
                 ).First;
+                if (value == null)
+                {
+                    if (dbKvp == null) return;
+                    dbKvp.Clear();
+                    dbKvp.Delete();
+                    return;
+                }
                 if (dbKvp == null)
-                    throw new Exception("Unexpected KeyValuePair exception. KeyValuePair was null.");
-                dbKvp.Value = value;
+                    NewKeyPair(this, key, value);
+                else
+                {
+                    dbKvp.Clear();
+                    dbKvp.Delete();
+                    NewKeyPair(this, key, value);
+                }
+
+                Console.WriteLine($"DONE INDEXER at {DateTime.Now:O}");
             }
         }
 
         public dynamic SafeGet(string key)
         {
-            if (ContainsKey(key))
-                return this[key];
-            return null;
+            return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
+                                         "WHERE t.Dictionary =? AND t.Key =? ", this, key).First?.Value;
         }
 
-        public ICollection<string> Keys => Dict.Keys;
+        public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
 
-        public ICollection<object> Values => Dict.Values;
+        public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
     }
 }

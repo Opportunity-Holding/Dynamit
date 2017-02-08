@@ -15,7 +15,6 @@ namespace Dynamit
         public static void Init(bool setupIndexes = true, bool setupHooks = true)
         {
             var dicts = typeof(DDictionary).GetConcreteSubclasses();
-
             var dictsWithMissingAttribute = dicts.Where(d => d.GetAttribute<DDictionaryAttribute>() == null).ToList();
             if (dictsWithMissingAttribute.Any())
                 throw new ScDictionaryException(dictsWithMissingAttribute.First());
@@ -32,14 +31,14 @@ namespace Dynamit
                 {
                     try
                     {
-                        DB.CreateIndex(kvp.FullName, "Dictionary");
+                        DB.CreateIndex(kvp, "Dictionary");
                     }
                     catch
                     {
                     }
                     try
                     {
-                        DB.CreateIndex(kvp.FullName, "Key", "Dictionary");
+                        DB.CreateIndex(kvp,"Dictionary", "Key");
                     }
                     catch
                     {

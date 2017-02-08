@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Dynamic;
 using Dynamit.ValueObjects.Bool;
 using Dynamit.ValueObjects.Byte;
@@ -20,10 +19,8 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DKeyValuePair
+    public abstract class DValue
     {
-        public DDictionary Dictionary;
-        public readonly string Key;
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
 
@@ -32,22 +29,44 @@ namespace Dynamit
         public dynamic Value
         {
             get { return GetValueObject()?.content; }
-            private set
+            set
             {
-                if (value == null) return;
+                var valueObject = GetValueObject();
+                if (value == null)
+                {
+                    if (valueObject != null)
+                        Db.Delete(valueObject);
+                    ValueObjectNo = null;
+                    return;
+                }
+                if (valueObject == null)
+                {
+                    ValueObjectNo = MakeValueObject(value);
+                    return;
+                }
+                if (valueObject.content == null)
+                {
+                    if (valueObject is String1 && value is string)
+                    {
+                        valueObject.content = value;
+                        return;
+                    }
+                }
+                else if (valueObject.content.GetType() == value.GetType())
+                {
+                    valueObject.content = value;
+                    return;
+                }
+                Db.Delete(valueObject);
                 ValueObjectNo = MakeValueObject(value);
             }
         }
 
         public ulong? ValueObjectNo;
 
-        protected DKeyValuePair(DDictionary dict, string key, object value = null)
+        protected DValue(object value = null)
         {
-            Console.WriteLine($"Begin create new DKvp at {DateTime.Now:O}");
-            Dictionary = dict;
-            Key = key;
-            Value = value;
-            Console.WriteLine($"Done created new DKvp at {DateTime.Now:O}");
+            ValueObjectNo = MakeValueObject(value);
         }
 
         private static ulong? MakeValueObject(dynamic value)
@@ -95,14 +114,7 @@ namespace Dynamit
         {
             var valueObject = GetValueObject();
             if (valueObject != null)
-            {
                 Db.Delete(valueObject);
-            }
-        }
-
-        public static implicit operator KeyValuePair<string, object>(DKeyValuePair pair)
-        {
-            return new KeyValuePair<string, object>(pair.Key, pair.Value);
         }
     }
 }
