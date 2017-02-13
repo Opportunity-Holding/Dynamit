@@ -21,6 +21,9 @@ namespace Dynamit
 
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
 
+            foreach (var pair in DB.All<DKeyValuePair>())
+                Db.Transact(() => { pair.ValueHash = pair.Value.GetHashCode(); });
+
             if (setupIndexes)
             {
                 foreach (var d in dicts)
@@ -38,7 +41,14 @@ namespace Dynamit
                     }
                     try
                     {
-                        DB.CreateIndex(kvp,"Dictionary", "Key");
+                        DB.CreateIndex(kvp, "Dictionary", "Key");
+                    }
+                    catch
+                    {
+                    }
+                    try
+                    {
+                        DB.CreateIndex(kvp, "Key", "ValueHash");
                     }
                     catch
                     {

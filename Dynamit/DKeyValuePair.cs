@@ -24,6 +24,8 @@ namespace Dynamit
     {
         public DDictionary Dictionary;
         public readonly string Key;
+        public int ValueHash;
+
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
 
@@ -35,7 +37,9 @@ namespace Dynamit
             private set
             {
                 if (value == null) return;
-                ValueObjectNo = MakeValueObject(value);
+                int hash;
+                ValueObjectNo = MakeValueObject(value, out hash);
+                ValueHash = hash;
             }
         }
 
@@ -48,14 +52,18 @@ namespace Dynamit
             Value = value;
         }
 
-        private static ulong? MakeValueObject(dynamic value)
+        private static ulong? MakeValueObject(dynamic value, out int hash)
         {
             if (value == null)
+            {
+                hash = 0;
                 return null;
+            }
             if (value is IDynamicMetaObjectProvider)
             {
                 ValueTypes valueType;
                 var obj = Helper.GetStaticType(value, out valueType);
+                hash = obj.GetHashCode();
                 switch (valueType)
                 {
                     case ValueTypes.String:
@@ -72,20 +80,22 @@ namespace Dynamit
                         return new DateTime1 {content = obj}.GetObjectNo();
                 }
             }
-            else if (value is string) return new String1 {content = value}.GetObjectNo();
-            else if (value is bool) return new Bool1 {content = value}.GetObjectNo();
-            else if (value is byte) return new Byte1 {content = value}.GetObjectNo();
-            else if (value is DateTime) return new DateTime1 {content = value}.GetObjectNo();
-            else if (value is decimal) return new Decimal1 {content = value}.GetObjectNo();
-            else if (value is double) return new Double1 {content = value}.GetObjectNo();
-            else if (value is int) return new Int1 {content = value}.GetObjectNo();
-            else if (value is long) return new Long1 {content = value}.GetObjectNo();
-            else if (value is sbyte) return new Sbyte1 {content = value}.GetObjectNo();
-            else if (value is short) return new Short1 {content = value}.GetObjectNo();
-            else if (value is float) return new Single1 {content = value}.GetObjectNo();
-            else if (value is uint) return new Uint1 {content = value}.GetObjectNo();
-            else if (value is ulong) return new Ulong1 {content = value}.GetObjectNo();
-            else if (value is ushort) return new Ushort1 {content = value}.GetObjectNo();
+            hash = value.GetHashCode();
+            if (value is string) return new String1 {content = value}.GetObjectNo();
+            if (value is bool) return new Bool1 {content = value}.GetObjectNo();
+            if (value is byte) return new Byte1 {content = value}.GetObjectNo();
+            if (value is DateTime) return new DateTime1 {content = value}.GetObjectNo();
+            if (value is decimal) return new Decimal1 {content = value}.GetObjectNo();
+            if (value is double) return new Double1 {content = value}.GetObjectNo();
+            if (value is int) return new Int1 {content = value}.GetObjectNo();
+            if (value is long) return new Long1 {content = value}.GetObjectNo();
+            if (value is sbyte) return new Sbyte1 {content = value}.GetObjectNo();
+            if (value is short) return new Short1 {content = value}.GetObjectNo();
+            if (value is float) return new Single1 {content = value}.GetObjectNo();
+            if (value is uint) return new Uint1 {content = value}.GetObjectNo();
+            if (value is ulong) return new Ulong1 {content = value}.GetObjectNo();
+            if (value is ushort) return new Ushort1 {content = value}.GetObjectNo();
+            hash = 0;
             return null;
         }
 
