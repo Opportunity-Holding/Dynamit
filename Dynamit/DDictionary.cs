@@ -66,7 +66,14 @@ namespace Dynamit
 
         public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            if (array == null) throw new ArgumentNullException(nameof(array));
+            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            if (arrayIndex + Count > array.Length - 1) throw new ArgumentException(nameof(arrayIndex));
+            foreach (var kvp in KeyValuePairs)
+            {
+                array[arrayIndex] = kvp;
+                arrayIndex += 1;
+            }
         }
 
         public bool Remove(KeyValuePair<string, object> item)

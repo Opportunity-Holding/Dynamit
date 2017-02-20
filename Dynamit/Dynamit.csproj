@@ -57,9 +57,7 @@
     <Compile Include="Exceptions.cs" />
     <Compile Include="DElement.cs" />
     <Compile Include="DList.cs" />
-    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Finder.cs" />
-    <Compile Include="TDictionary.cs" />
     <Compile Include="ValueObjects\Bool\Bool1.cs" />
     <Compile Include="ValueObjects\Byte\Byte1.cs" />
     <Compile Include="ValueObjects\DateTime\DateTime1.cs" />
@@ -77,11 +75,7 @@
     <Compile Include="ValueObjects\Ushort\Ushort1.cs" />
     <Compile Include="ValueObjects\ValueObject.cs" />
     <Compile Include="DB.cs" />
-    <Compile Include="DynamiAssignment.cs" />
-    <Compile Include="DynamiRow.cs" />
-    <Compile Include="Entity.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="ObjectNumber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DDictionary.cs" />
     <Compile Include="DKeyValuePair.cs" />

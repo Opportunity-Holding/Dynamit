@@ -6,8 +6,7 @@ using Starcounter;
 
 namespace Dynamit
 {
-    [Database]
-    public abstract class DArray : IList<object>
+    internal abstract class DArray : IList<object>
     {
         [Transient]
         private List<object> _list;

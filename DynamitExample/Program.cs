@@ -1,4 +1,5 @@
-﻿using Dynamit;
+﻿using System.Collections.Generic;
+using Dynamit;
 using Starcounter;
 
 namespace DynamitExample
@@ -8,7 +9,7 @@ namespace DynamitExample
         public static void Main()
         {
             DynamitConfig.Init();
-            foreach (var x in DB.All<DDictionary>())
+            foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
                 Db.Transact(() => x.Delete());
 
             var dict1 = Db.Transact(() => new MyDict
@@ -42,12 +43,12 @@ namespace DynamitExample
             });
 
 
-            var a = Finder.DDictionary<MyDict>(new TDictionary
+            var a = Finder.DDictionary<MyDict>(new Dictionary<string, object>
             {
                 ["Age"] = 28
             });
 
-            var a1 = Finder.DDictionary<MyDict>(new TDictionary
+            var a1 = Finder.DDictionary<MyDict>(new Dictionary<string, object>
             {
                 ["Age"] = 28,
                 ["Group"] = "BCD"

@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
-using Starcounter.Metadata;
 
 namespace Dynamit
 {
     /// <summary>
     /// This class provides static methods for database queries in the DRTB system.
     /// </summary>
-    public static class DB
+    internal static class DB
     {
         #region Get methods
 

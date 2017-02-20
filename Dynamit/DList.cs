@@ -6,8 +6,7 @@ using Starcounter;
 
 namespace Dynamit
 {
-    [Database]
-    public abstract class DList : IList<object>
+    internal abstract class DList : IList<object>
     {
         [Transient]
         private List<object> _list;
@@ -46,7 +45,7 @@ namespace Dynamit
             return Elements.OrderBy(e => e.Index).Select(e => e.Value).ToList();
         }
 
-        protected abstract DElement NewElement(DList list, object value = null);
+        internal abstract DElement NewElement(DList list, object value = null);
 
         public void Update()
         {

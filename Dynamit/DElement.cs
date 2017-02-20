@@ -18,8 +18,7 @@ using Starcounter;
 
 namespace Dynamit
 {
-    [Database]
-    public abstract class DElement
+    internal abstract class DElement
     {
         public readonly DList List;
         public readonly int Index;

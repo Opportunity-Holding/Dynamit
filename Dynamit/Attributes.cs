@@ -4,7 +4,7 @@ namespace Dynamit
 {
     public class DDictionaryAttribute : Attribute
     {
-        public Type KeyValuePairTable;
+        public readonly Type KeyValuePairTable;
 
         public DDictionaryAttribute(Type keyValuePairTable)
         {

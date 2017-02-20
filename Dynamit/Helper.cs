@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Starcounter;
 
 namespace Dynamit
 {
-    public static class Helper
+    internal static class Helper
     {
         public static IList<Type> GetConcreteSubclasses(this Type baseType)
         {

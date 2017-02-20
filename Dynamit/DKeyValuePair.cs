@@ -24,7 +24,7 @@ namespace Dynamit
     {
         public DDictionary Dictionary;
         public readonly string Key;
-        public int ValueHash;
+        public int? ValueHash;
 
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
@@ -37,7 +37,7 @@ namespace Dynamit
             private set
             {
                 if (value == null) return;
-                int hash;
+                int? hash;
                 ValueObjectNo = MakeValueObject(value, out hash);
                 ValueHash = hash;
             }
@@ -52,11 +52,11 @@ namespace Dynamit
             Value = value;
         }
 
-        private static ulong? MakeValueObject(dynamic value, out int hash)
+        private static ulong? MakeValueObject(dynamic value, out int? hash)
         {
             if (value == null)
             {
-                hash = 0;
+                hash = null;
                 return null;
             }
             if (value is IDynamicMetaObjectProvider)
@@ -95,7 +95,7 @@ namespace Dynamit
             if (value is uint) return new Uint1 {content = value}.GetObjectNo();
             if (value is ulong) return new Ulong1 {content = value}.GetObjectNo();
             if (value is ushort) return new Ushort1 {content = value}.GetObjectNo();
-            hash = 0;
+            hash = null;
             return null;
         }
 

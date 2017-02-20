@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Starcounter;
 
 namespace Dynamit
 {
@@ -13,15 +14,31 @@ namespace Dynamit
         /// <typeparam name="T"></typeparam>
         /// <param name="equalsConditions"></param>
         /// <returns></returns>
-        public static IEnumerable<T> DDictionary<T>(IDictionary<string, object> equalsConditions)
+        public static IEnumerable<DDictionary> DDictionary<T>(IDictionary<string, object> equalsConditions)
             where T : DDictionary
         {
-            return DB.All<T>().Where(dict => equalsConditions.All(cond =>
+            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            IEnumerable<DDictionary> matches = new HashSet<DDictionary>();
+            var sqlstring = $"SELECT t.Dictionary FROM {kvpTable} t WHERE t.Key=? AND t.ValueHash=? ";
+            if (equalsConditions.Any())
             {
-                object value;
-                return dict.TryGetValue(cond.Key, out value) && value.Equals(cond.Value);
-            }));
+                var first = true;
+                foreach (var econd in equalsConditions)
+                {
+                    if (first)
+                    {
+                        ((HashSet<DDictionary>) matches).UnionWith(Db.SQL<DDictionary>(sqlstring, econd.Key, econd.Value?.GetHashCode()));
+                        first = false;
+                    }
+                    else
+                        ((HashSet<DDictionary>) matches).IntersectWith(Db.SQL<DDictionary>(sqlstring, econd.Key,
+                            econd.Value?.GetHashCode()));
+                }
+            }
+            else matches = Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
+            return matches;
         }
+
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which ANY of the
