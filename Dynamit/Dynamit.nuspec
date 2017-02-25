@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Dynamit</id>
+    <version>0.1.2</version>
+    <title>Dynamit</title>
+    <authors>Erik von Krusenstierna</authors>
+    <owners>Mopedo AB</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Dynamic table definitions for Starcounter</description>
+    <releaseNotes>Minor improvements</releaseNotes>
+    <copyright>Copyright 2017 Mopedo AB. All rights reserved.</copyright>
+    <tags>mopedo starcounter dynamic table ddictionary dynamit</tags>
+    <summary>Dynamic table definitions for Starcounter. Specification available at: https://goo.gl/b4Uw27</summary>
+    <licenseUrl>https://goo.gl/eJS8o9</licenseUrl>
+    <iconUrl>https://storage.googleapis.com/mopedo-resources/Mopedo_logo_whitefull.png</iconUrl>
+  </metadata>
+  <files>
+    <file src="bin\Release\Dynamit.dll" target="lib\Dynamit\Dynamit.dll" />
+    <file src="bin\Release\Dynamit.xml" target="lib\Dynamit\Dynamit.xml" />
+  </files>
+</package>

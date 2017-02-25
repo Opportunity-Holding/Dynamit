@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Starcounter;
 
@@ -6,6 +8,8 @@ namespace Dynamit
 {
     public static class DynamitConfig
     {
+        private static bool InitCompleted;
+
         /// <summary>
         /// Sets up indexes and callbacks for Dynamit database classes to 
         /// improve runtime performance.
@@ -14,6 +18,7 @@ namespace Dynamit
         /// <param name="setupHooks"></param>
         public static void Init(bool setupIndexes = true, bool setupHooks = true)
         {
+            if (InitCompleted) return;
             var dicts = typeof(DDictionary).GetConcreteSubclasses();
             var dictsWithMissingAttribute = dicts.Where(d => d.GetAttribute<DDictionaryAttribute>() == null).ToList();
             if (dictsWithMissingAttribute.Any())
@@ -74,6 +79,7 @@ namespace Dynamit
                         .Invoke(null, null);
                 }
             }
+            InitCompleted = true;
         }
 
         private static class Janitor
