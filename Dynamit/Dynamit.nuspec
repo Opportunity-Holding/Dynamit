@@ -15,8 +15,4 @@
     <licenseUrl>https://goo.gl/eJS8o9</licenseUrl>
     <iconUrl>https://storage.googleapis.com/mopedo-resources/Mopedo_logo_whitefull.png</iconUrl>
   </metadata>
-  <files>
-    <file src="bin\Release\Dynamit.dll" target="lib\Dynamit\Dynamit.dll" />
-    <file src="bin\Release\Dynamit.xml" target="lib\Dynamit\Dynamit.xml" />
-  </files>
 </package>
