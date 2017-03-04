@@ -19,15 +19,21 @@ namespace Dynamit
         public static void Init(bool setupIndexes = true, bool setupHooks = true)
         {
             if (InitCompleted) return;
+
             var dicts = typeof(DDictionary).GetConcreteSubclasses();
             var dictsWithMissingAttribute = dicts.Where(d => d.GetAttribute<DDictionaryAttribute>() == null).ToList();
             if (dictsWithMissingAttribute.Any())
-                throw new ScDictionaryException(dictsWithMissingAttribute.First());
+                throw new DListException(dictsWithMissingAttribute.First());
+
+            //var lists = typeof(DList).GetConcreteSubclasses();
+            //var listsWithMissingAttribute = lists.Where(d => d.GetAttribute<DListAttribute>() == null).ToList();
+            //if (listsWithMissingAttribute.Any())
+            //    throw new DListException(listsWithMissingAttribute.First());
 
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
-
+            
             foreach (var pair in DB.All<DKeyValuePair>())
-                Db.Transact(() => { pair.ValueHash = pair.Value.GetHashCode(); });
+                Db.TransactAsync(() => { pair.ValueHash = pair.Value.GetHashCode(); });
 
             if (setupIndexes)
             {
@@ -66,7 +72,7 @@ namespace Dynamit
                 foreach (var d in dicts)
                 {
                     typeof(Janitor)
-                        .GetMethod("AddScDictHook", BindingFlags.Public | BindingFlags.Static)
+                        .GetMethod("AddDDictHook", BindingFlags.Public | BindingFlags.Static)
                         .MakeGenericMethod(d)
                         .Invoke(null, null);
                 }
@@ -86,15 +92,15 @@ namespace Dynamit
         {
             public static void AddKvpHook<T>() where T : DKeyValuePair
             {
-                Hook<T>.BeforeDelete += (s, p) => Db.Transact(p.Clear);
+                Hook<T>.BeforeDelete += (s, p) => Db.TransactAsync(p.Clear);
             }
 
-            public static void AddScDictHook<T>() where T : DDictionary
+            public static void AddDDictHook<T>() where T : DDictionary
             {
                 Hook<T>.BeforeDelete += (s, d) =>
                 {
                     foreach (var pair in d.KeyValuePairs)
-                        Db.Transact(() =>
+                        Db.TransactAsync(() =>
                         {
                             pair.Clear();
                             pair.Delete();

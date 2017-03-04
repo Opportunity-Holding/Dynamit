@@ -100,7 +100,8 @@ namespace Dynamit
         {
             try
             {
-                var obj = DB.Get<DKeyValuePair>("Dictionary", this, "Key", key);
+                var obj = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
+                             "WHERE t.Dictionary =? AND t.Key =?", this, key).First;
                 obj?.Delete();
                 return true;
             }

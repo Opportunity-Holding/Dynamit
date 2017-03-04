@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Dynamit;
 using Starcounter;
 
@@ -12,15 +13,19 @@ namespace DynamitExample
         {
             DynamitConfig.Init();
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
-                Db.Transact(() => x.Delete());
+                Db.TransactAsync(() => x.Delete());
 
-            var product = Db.Transact(() => new DynamicProduct
+            DynamicProduct product = null;
+            Db.TransactAsync(() =>
             {
-                ["Label"] = "Double Espresso",
-                ["Product_ID"] = 42,
-                ["Product_date"] = new DateTime(2017, 01, 05),
-                ["Price"] = 3.25,
-                ["Group"] = "A1"
+                product = new DynamicProduct
+                {
+                    ["Label"] = "Double Espresso",
+                    ["Product_ID"] = 42,
+                    ["Product_date"] = new DateTime(2017, 01, 05),
+                    ["Price"] = 3.25,
+                    ["Group"] = "A1"
+                };
             });
 
             var s = product["Product_date"].AddDays(2).ToString("O");

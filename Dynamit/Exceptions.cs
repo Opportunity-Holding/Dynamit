@@ -2,10 +2,18 @@
 
 namespace Dynamit
 {
-    internal class ScDictionaryException : Exception
+    internal class DDictionaryException : Exception
     {
-        public ScDictionaryException(Type type) : base("Missing 'ScDictionaryAttribute' " +
-                                                       $"decoration for type '{type.FullName}'")
+        public DDictionaryException(Type type)
+            : base($"Missing DDictionaryAttribute decoration for type '{type.FullName}'")
+        {
+        }
+    }
+
+    internal class DListException : Exception
+    {
+        public DListException(Type type)
+            : base($"Missing DListAttribute decoration for type '{type.FullName}'")
         {
         }
     }

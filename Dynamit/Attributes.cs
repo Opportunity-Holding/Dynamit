@@ -11,4 +11,14 @@ namespace Dynamit
             KeyValuePairTable = keyValuePairTable;
         }
     }
+
+    public class DListAttribute : Attribute
+    {
+        public readonly Type ElementTable;
+
+        public DListAttribute(Type elementTable)
+        {
+            ElementTable = elementTable;
+        }
+    }
 }
