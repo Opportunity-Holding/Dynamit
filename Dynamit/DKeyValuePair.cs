@@ -20,7 +20,7 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DKeyValuePair
+    public abstract class DKeyValuePair : IEntity
     {
         public DDictionary Dictionary;
         public readonly string Key;
@@ -103,9 +103,12 @@ namespace Dynamit
         {
             var valueObject = GetValueObject();
             if (valueObject != null)
-            {
                 Db.Delete(valueObject);
-            }
+        }
+
+        public void OnDelete()
+        {
+            Clear();
         }
 
         public static implicit operator KeyValuePair<string, object>(DKeyValuePair pair)

@@ -8,7 +8,7 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DDictionary : IDictionary<string, object>
+    public abstract class DDictionary : IDictionary<string, object>, IEntity
     {
         public string KvpTable { get; }
 
@@ -101,7 +101,7 @@ namespace Dynamit
             try
             {
                 var obj = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                             "WHERE t.Dictionary =? AND t.Key =?", this, key).First;
+                                                "WHERE t.Dictionary =? AND t.Key =?", this, key).First;
                 obj?.Delete();
                 return true;
             }
@@ -160,6 +160,12 @@ namespace Dynamit
         {
             return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
                                          "WHERE t.Dictionary =? AND t.Key =? ", this, key).First?.Value;
+        }
+
+        public void OnDelete()
+        {
+            foreach (var pair in KeyValuePairs)
+                pair.Delete();
         }
 
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
