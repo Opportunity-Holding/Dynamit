@@ -52,6 +52,8 @@ namespace Dynamit
                 try
                 {
                     string s = value;
+                    if (s.First() == '\"' && s.Last() == '\"')
+                        s = s.Substring(1, s.Length - 2);
                     o = s;
                     valueType = ValueTypes.String;
                 }
