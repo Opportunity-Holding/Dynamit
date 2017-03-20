@@ -8,13 +8,18 @@ namespace Dynamit
 {
     public static class DynamitConfig
     {
+        internal static bool EscapeStrings;
+
         /// <summary>
         /// Sets up indexes and callbacks for Dynamit database classes to 
         /// improve runtime performance.
         /// </summary>
         /// <param name="setupIndexes"></param>
-        public static void Init(bool setupIndexes = true)
+        /// <param name="enableEscapeStrings">If true, all strings surrounded with '\"' will be 
+        /// escaped to ordinary strings. Necessary for some string casts to work properly with RESTar</param>
+        public static void Init(bool setupIndexes = true, bool enableEscapeStrings = false)
         {
+            EscapeStrings = enableEscapeStrings;
             var dicts = typeof(DDictionary).GetConcreteSubclasses();
             var dictsWithMissingAttribute = dicts.Where(d => d.GetAttribute<DDictionaryAttribute>() == null).ToList();
             if (dictsWithMissingAttribute.Any())
