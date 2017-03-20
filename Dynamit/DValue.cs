@@ -87,7 +87,7 @@ namespace Dynamit
                 switch (valueType)
                 {
                     case ValueTypes.String:
-                        return new String1 {content = obj}.GetObjectNo();
+                        return new String1(obj).GetObjectNo();
                     case ValueTypes.Bool:
                         return new Bool1 {content = obj}.GetObjectNo();
                     case ValueTypes.Int:
@@ -101,7 +101,7 @@ namespace Dynamit
                 }
             }
             hash = value.GetHashCode();
-            if (value is string) return new String1 {content = value}.GetObjectNo();
+            if (value is string) return new String1(value).GetObjectNo();
             if (value is bool) return new Bool1 {content = value}.GetObjectNo();
             if (value is byte) return new Byte1 {content = value}.GetObjectNo();
             if (value is DateTime) return new DateTime1 {content = value}.GetObjectNo();

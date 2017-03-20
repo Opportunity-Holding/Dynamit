@@ -32,7 +32,7 @@ namespace Dynamit
 
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
             foreach (var pair in DB.All<DKeyValuePair>())
-                Db.TransactAsync(() => pair.ValueHash = pair.Value.GetHashCode());
+                Db.TransactAsync(() => pair.ValueHash = pair.Value?.GetHashCode());
 
             if (!setupIndexes) return;
             foreach (var kvp in pairs)

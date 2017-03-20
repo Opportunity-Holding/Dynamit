@@ -1,24 +1,23 @@
 ﻿using System.Linq;
 using Starcounter;
+using static Dynamit.DynamitConfig;
 
 namespace Dynamit.ValueObjects.String
 {
     [Database]
     public class String1 : ValueObject
     {
-        private string _content;
+        public string content { get; internal set; }
 
-        public string content
+        public String1(string value)
         {
-            get { return _content; }
-            set
-            {
-                var s = value;
-                if (DynamitConfig.EscapeStrings && s.First() == '\"' && s.Last() == '\"')
-                    s = s.Substring(1, s.Length - 2);
-                _content = s;
-            }
+            content = EscapeStrings ? Escaped(value) : value;
         }
+
+        private static string Escaped(string input) =>
+            input.First() == '\"' && input.Last() == '\"'
+                ? input.Substring(1, input.Length - 2)
+                : input;
 
         public override string ToString() => content;
     }

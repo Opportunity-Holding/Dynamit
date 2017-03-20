@@ -5,6 +5,6 @@ namespace Dynamit.ValueObjects.Key
     [Database]
     public class Key1
     {
-        public string content { get; set; }
+        public string content { get; internal set; }
     }
 }
