@@ -30,7 +30,7 @@ namespace DynamitExample
 
             var s = product["Product_date"].AddDays(2).ToString("O");
 
-            dynamic pr;
+            dynamic pr = null;
 
             Db.TransactAsync(() =>
             {
@@ -42,6 +42,8 @@ namespace DynamitExample
 
             dynamic dsa = product;
             var dx = dsa.Label;
+
+            var g = dsa.Product_date.AddDays(1).ToString();
 
             Db.TransactAsync(() =>
             {
