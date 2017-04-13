@@ -3,12 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using Starcounter;
+using static System.Dynamic.BindingRestrictions;
+using static System.Linq.Expressions.Expression;
+using static System.Reflection.BindingFlags;
 
 namespace Dynamit
 {
     [Database]
-    public abstract class DDictionary : IDictionary<string, object>, IEntity
+    public abstract class DDictionary : IDictionary<string, object>, IEntity, IDynamicMetaObjectProvider
     {
         public string KvpTable { get; }
 
@@ -88,7 +92,8 @@ namespace Dynamit
         public bool ContainsKey(string key)
         {
             return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                         "WHERE t.Dictionary =? AND t.Key =?", this, key).First != null;
+                                         "WHERE t.Dictionary =? AND t.Key =?", this, key)
+                       .First != null;
         }
 
         public void Add(string key, object value)
@@ -101,7 +106,8 @@ namespace Dynamit
             try
             {
                 var obj = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                                "WHERE t.Dictionary =? AND t.Key =?", this, key).First;
+                                                "WHERE t.Dictionary =? AND t.Key =?", this, key)
+                    .First;
                 obj?.Delete();
                 return true;
             }
@@ -114,7 +120,8 @@ namespace Dynamit
         public bool TryGetValue(string key, out object value)
         {
             var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                              "WHERE t.Dictionary =? AND t.Key =? ", this, key).First;
+                                              "WHERE t.Dictionary =? AND t.Key =? ", this, key)
+                .First;
             value = match?.Value;
             return match != null;
         }
@@ -124,7 +131,8 @@ namespace Dynamit
             get
             {
                 var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                                  "WHERE t.Dictionary =? AND t.Key =? ", this, key).First;
+                                                  "WHERE t.Dictionary =? AND t.Key =? ", this, key)
+                    .First;
                 if (match == null) throw new KeyNotFoundException();
                 return match.Value;
             }
@@ -136,8 +144,9 @@ namespace Dynamit
                     value = Helper.GetStaticType(value, out valueType);
                 }
                 var dbKvp = Db.SQL<DKeyValuePair>(
-                    $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?", this, key
-                ).First;
+                        $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?", this, key
+                    )
+                    .First;
                 if (value == null)
                 {
                     if (dbKvp == null) return;
@@ -159,7 +168,8 @@ namespace Dynamit
         public dynamic SafeGet(string key)
         {
             return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                         "WHERE t.Dictionary =? AND t.Key =? ", this, key).First?.Value;
+                                         "WHERE t.Dictionary =? AND t.Key =? ", this, key)
+                .First?.Value;
         }
 
         public void OnDelete()
@@ -171,5 +181,41 @@ namespace Dynamit
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
 
         public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
+
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
+
+        private object Get(string key) => ContainsKey(key) ? this[key] : null;
+        private object Set(string key, object value) => this[key] = value;
+
+        private class DMetaObject : DynamicMetaObject
+        {
+            internal DMetaObject(Expression e, DDictionary d) : base(e, BindingRestrictions.Empty, d)
+            {
+            }
+
+            public override DynamicMetaObject BindGetMember(GetMemberBinder binder) => new DynamicMetaObject
+            (
+                expression: Call
+                (
+                    instance: Convert(Expression, LimitType),
+                    method: typeof(DDictionary).GetMethod("Get", Instance | NonPublic),
+                    arguments: Constant(binder.Name)
+                ),
+                restrictions: GetTypeRestriction(Expression, LimitType)
+            );
+
+            public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value) =>
+                new DynamicMetaObject
+                (
+                    expression: Call
+                    (
+                        instance: Convert(Expression, LimitType),
+                        method: typeof(DDictionary).GetMethod("Set", Instance | NonPublic),
+                        arg0: Constant(binder.Name),
+                        arg1: Convert(value.Expression, typeof(object))
+                    ),
+                    restrictions: GetTypeRestriction(Expression, LimitType)
+                );
+        }
     }
 }

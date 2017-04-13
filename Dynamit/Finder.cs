@@ -27,13 +27,13 @@ namespace Dynamit
                 {
                     if (first)
                     {
-                        ((HashSet<T>) matches).UnionWith(Db.SQL<T>(sqlstring, econd.Key,
-                            econd.Value?.GetHashCode()));
+                        ((HashSet<T>) matches).UnionWith(Db.SQL<DDictionary>(sqlstring, econd.Key,
+                            econd.Value?.GetHashCode()).Cast<T>());
                         first = false;
                     }
                     else
-                        ((HashSet<T>) matches).IntersectWith(Db.SQL<T>(sqlstring, econd.Key,
-                            econd.Value?.GetHashCode()));
+                        ((HashSet<T>) matches).IntersectWith(Db.SQL<DDictionary>(sqlstring, econd.Key,
+                            econd.Value?.GetHashCode()).Cast<T>());
                 }
             }
             else matches = Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");

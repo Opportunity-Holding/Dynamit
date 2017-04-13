@@ -30,6 +30,24 @@ namespace DynamitExample
 
             var s = product["Product_date"].AddDays(2).ToString("O");
 
+            dynamic pr;
+
+            Db.TransactAsync(() =>
+            {
+                pr = new DynamicProduct();
+                pr.A = "My favourite";
+                pr.Aswoo = 123321.1;
+                pr.Goog = DateTime.Now;
+            });
+
+            dynamic dsa = product;
+            var dx = dsa.Label;
+
+            Db.TransactAsync(() =>
+            {
+                dsa.Banana = 123123.1;
+            });
+
             var o = product is IDictionary<string, dynamic>;
 
             var d = Finder.Select<DynamicProduct>(row => row["Product_ID"] > 10).First()["Label"];
