@@ -12,11 +12,13 @@ using static System.Reflection.BindingFlags;
 namespace Dynamit
 {
     [Database]
-    public abstract class DDictionary : IDictionary<string, object>, IEntity, IDynamicMetaObjectProvider
+    public abstract class DDictionary : IDictionary<string, object>, ICollection<KeyValuePair<string, object>>,
+        IReadOnlyDictionary<string, object>, IReadOnlyCollection<KeyValuePair<string, object>>,
+        IEnumerable<KeyValuePair<string, object>>, IEnumerable, IEntity, IDynamicMetaObjectProvider
     {
         public string KvpTable { get; }
 
-        public DDictionary()
+        protected DDictionary()
         {
             KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
         }
@@ -42,25 +44,11 @@ namespace Dynamit
 
         public void Add(KeyValuePair<string, object> item)
         {
+            if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
             if (item.Value == null) return;
             if (ContainsKey(item.Key))
                 throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
             NewKeyPair(this, item.Key, item.Value);
-        }
-
-        public void Clear()
-        {
-            foreach (var pair in KeyValuePairs)
-            {
-                pair.Clear();
-                pair.Delete();
-            }
-        }
-
-        public void ClearAndDelete()
-        {
-            Clear();
-            this.Delete();
         }
 
         public bool Contains(KeyValuePair<string, object> item)
@@ -103,6 +91,8 @@ namespace Dynamit
 
         public bool Remove(string key)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
             try
             {
                 var obj = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
@@ -119,6 +109,8 @@ namespace Dynamit
 
         public bool TryGetValue(string key, out object value)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
             var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
                                               "WHERE t.Dictionary =? AND t.Key =? ", this, key)
                 .First;
@@ -130,6 +122,8 @@ namespace Dynamit
         {
             get
             {
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
                 var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
                                                   "WHERE t.Dictionary =? AND t.Key =? ", this, key)
                     .First;
@@ -138,6 +132,8 @@ namespace Dynamit
             }
             set
             {
+                if (key == null)
+                    throw new ArgumentNullException(nameof(key));
                 if (value is IDynamicMetaObjectProvider)
                 {
                     ValueTypes valueType;
@@ -178,9 +174,25 @@ namespace Dynamit
                 pair.Delete();
         }
 
-        public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
+        public void Clear()
+        {
+            foreach (var pair in KeyValuePairs)
+            {
+                pair.Clear();
+                pair.Delete();
+            }
+        }
 
+        public void ClearAndDelete()
+        {
+            Clear();
+            this.Delete();
+        }
+
+        public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
         public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
+        IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
+        IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
 
@@ -216,6 +228,8 @@ namespace Dynamit
                     ),
                     restrictions: GetTypeRestriction(Expression, LimitType)
                 );
+
+            public override IEnumerable<string> GetDynamicMemberNames() => ((DDictionary) Value).Keys;
         }
     }
 }

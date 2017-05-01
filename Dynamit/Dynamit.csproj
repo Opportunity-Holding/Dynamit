@@ -54,7 +54,6 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="DValue.cs" />
     <Compile Include="DynamitConfig.cs" />
-    <Compile Include="DArray.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="DElement.cs" />
     <Compile Include="DList.cs" />
