@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dynamit;
 using Starcounter;
+using static Dynamit.Operators;
 
 namespace DynamitExample
 {
@@ -53,9 +54,8 @@ namespace DynamitExample
 
             var o = product is IDictionary<string, dynamic>;
 
-            var d = Finder<DynamicProduct>.All.FirstOrDefault(row => row.SafeGet("Product_ID") == 42)?["Label"];
-
-            var sdsa = Finder<DynamicProduct>.Select(new Conditions {["Group", "="] = "A1"})
+            var sdsa = Finder<DynamicProduct>
+                 .Where(new Conditions {["Group", EQUALS] = "A1"})
                 .Where(da => da.SafeGet("Price") > 3);
 
             #endregion
