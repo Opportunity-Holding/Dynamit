@@ -49,18 +49,14 @@ namespace DynamitExample
 
             var g = dsa.Product_date.AddDays(1).ToString();
 
-            Db.TransactAsync(() =>
-            {
-                dsa.Banana = 123123.1;
-            });
+            Db.TransactAsync(() => { dsa.Banana = 123123.1; });
 
             var o = product is IDictionary<string, dynamic>;
 
-            var d = Finder.Select<DynamicProduct>(row => row["Product_ID"] > 10).First()["Label"];
+            var d = Finder<DynamicProduct>.All.FirstOrDefault(row => row.SafeGet("Product_ID") == 42)?["Label"];
 
-            var sdsa =
-                Finder.Select<DynamicProduct>(new Dictionary<string, dynamic> {["Group"] = "A1"})
-                    .Where(da => da.SafeGet("Price") > 3);
+            var sdsa = Finder<DynamicProduct>.Select(new Conditions {["Group", "="] = "A1"})
+                .Where(da => da.SafeGet("Price") > 3);
 
             #endregion
 
@@ -75,7 +71,7 @@ namespace DynamitExample
                     DateTime.Now
                 };
             });
-             
+
             var xs = "";
         }
     }
