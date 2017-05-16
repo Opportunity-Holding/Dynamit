@@ -93,7 +93,7 @@ namespace Dynamit
 
         public int Count => HighestIndex + 1;
 
-        public bool IsReadOnly => false;
+        public bool IsReadOnly { get; set; }
 
         public int IndexOf(object item)
         {

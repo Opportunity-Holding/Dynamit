@@ -35,14 +35,14 @@ namespace Dynamit
 
     public static class Finder<T> where T : DDictionary
     {
-        private static IEnumerable<DDictionary> EqualitySQL(KeyValuePair<Tuple<string, Operators>, object> c, string kvp)
+        private static IEnumerable<DDictionary> EqualitySQL(Tuple<string, Operators, object> c, string kvp)
         {
-            var opString = c.Key.Item2 == EQUALS ? "=?" : "<>?";
+            var opString = c.Item2 == EQUALS ? "=?" : "<>?";
             var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
-            return Db.SQL<DDictionary>(SQL, c.Key.Item1, c.Value.GetHashCode());
+            return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
         }
 
-        private static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
+        public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which ALL of the
@@ -51,10 +51,24 @@ namespace Dynamit
         /// <typeparam name="T"></typeparam>
         /// <param name="equalityConditions"></param>
         /// <returns></returns>
-        public static IEnumerable<T> Where(Conditions equalityConditions = null)
+        public static IEnumerable<T> Where(Conditions equalityConditions)
         {
             var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
-            if (!equalityConditions?.Any() != true) return All;
+            if (equalityConditions?.Any() != true) return All;
+            var results = new HashSet<DDictionary>();
+            equalityConditions.ForEach((cond, index) =>
+            {
+                var condTuple = new Tuple<string, Operators, dynamic>(cond.Key.Item1, cond.Key.Item2, cond.Value);
+                if (index == 0) results.UnionWith(EqualitySQL(condTuple, kvpTable));
+                else results.IntersectWith(EqualitySQL(condTuple, kvpTable));
+            });
+            return results.Cast<T>();
+        }
+
+        public static IEnumerable<T> Where(params Tuple<string, Operators, dynamic>[] equalityConditions)
+        {
+            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            if (equalityConditions?.Any() != true) return All;
             var results = new HashSet<DDictionary>();
             equalityConditions.ForEach((cond, index) =>
             {
@@ -62,6 +76,15 @@ namespace Dynamit
                 else results.IntersectWith(EqualitySQL(cond, kvpTable));
             });
             return results.Cast<T>();
+        }
+    }
+
+    internal static class FinderExtensions
+    {
+        internal static void ForEach<T>(this IEnumerable<T> ienum, Action<T, int> action)
+        {
+            var i = 0;
+            foreach (var e in ienum) action(e, i++);
         }
     }
 }

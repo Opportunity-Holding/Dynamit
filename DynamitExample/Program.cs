@@ -50,13 +50,20 @@ namespace DynamitExample
 
             var g = dsa.Product_date.AddDays(1).ToString();
 
+            var xas = Finder<DynamicProduct>.All.Where(ob => ob["Product_ID"] == 42);
+
             Db.TransactAsync(() => { dsa.Banana = 123123.1; });
 
             var o = product is IDictionary<string, dynamic>;
 
             var sdsa = Finder<DynamicProduct>
-                 .Where(new Conditions {["Group", EQUALS] = "A1"})
+                .Where(new Conditions {["Group", EQUALS] = "A1"})
                 .Where(da => da.SafeGet("Price") > 3);
+
+            Finder<DynamicProduct>.Where(
+                new Tuple<string, Operators, dynamic>("Product_ID", EQUALS, 42),
+                new Tuple<string, Operators, dynamic>("Price", EQUALS, 3.25)
+            );
 
             #endregion
 
