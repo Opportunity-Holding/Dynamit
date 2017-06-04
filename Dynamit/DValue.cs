@@ -19,7 +19,7 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DValue
+    public abstract class DValue : IEntity
     {
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
@@ -29,7 +29,7 @@ namespace Dynamit
 
         public dynamic Value
         {
-            get { return GetValueObject()?.content; }
+            get => GetValueObject()?.content;
             set
             {
                 var valueObject = GetValueObject();
@@ -67,8 +67,7 @@ namespace Dynamit
 
         protected DValue(object value = null)
         {
-            int? hash;
-            ValueObjectNo = MakeValueObject(value, out hash);
+            ValueObjectNo = MakeValueObject(value, out int? hash);
             ValueHash = hash;
         }
 
@@ -86,18 +85,12 @@ namespace Dynamit
                 hash = obj.GetHashCode();
                 switch (valueType)
                 {
-                    case ValueTypes.String:
-                        return new String1(obj).GetObjectNo();
-                    case ValueTypes.Bool:
-                        return new Bool1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Int:
-                        return new Int1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Long:
-                        return new Long1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Decimal:
-                        return new Decimal1 {content = obj}.GetObjectNo();
-                    case ValueTypes.DateTime:
-                        return new DateTime1 {content = obj}.GetObjectNo();
+                    case ValueTypes.String: return new String1(obj).GetObjectNo();
+                    case ValueTypes.Bool: return new Bool1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Int: return new Int1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Long: return new Long1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Decimal: return new Decimal1 {content = obj}.GetObjectNo();
+                    case ValueTypes.DateTime: return new DateTime1 {content = obj}.GetObjectNo();
                 }
             }
             hash = value.GetHashCode();
@@ -118,6 +111,8 @@ namespace Dynamit
             hash = null;
             return null;
         }
+
+        public void OnDelete() => Clear();
 
         internal void Clear()
         {

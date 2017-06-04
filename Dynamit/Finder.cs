@@ -42,12 +42,12 @@ namespace Dynamit
             return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
         }
 
-        private static IEnumerable<DDictionary> EqualitySQL(ValueTuple<string, Operators, object> c, string kvp)
-        {
-            var opString = c.Item2 == EQUALS ? "=?" : "<>?";
-            var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
-            return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
-        }
+        //private static IEnumerable<DDictionary> EqualitySQL(ValueTuple<string, Operators, object> c, string kvp)
+        //{
+        //    var opString = c.Item2 == EQUALS ? "=?" : "<>?";
+        //    var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
+        //    return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
+        //}
 
         public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
@@ -85,18 +85,18 @@ namespace Dynamit
             return results.Cast<T>();
         }
 
-        public static IEnumerable<T> Where(params ValueTuple<string, Operators, dynamic>[] equalityConditions)
-        {
-            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
-            if (equalityConditions?.Any() != true) return All;
-            var results = new HashSet<DDictionary>();
-            equalityConditions.ForEach((cond, index) =>
-            {
-                if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
-                else results.IntersectWith(EqualitySQL(cond, kvpTable));
-            });
-            return results.Cast<T>();
-        }
+        //public static IEnumerable<T> Where(params ValueTuple<string, Operators, dynamic>[] equalityConditions)
+        //{
+        //    var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+        //    if (equalityConditions?.Any() != true) return All;
+        //    var results = new HashSet<DDictionary>();
+        //    equalityConditions.ForEach((cond, index) =>
+        //    {
+        //        if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
+        //        else results.IntersectWith(EqualitySQL(cond, kvpTable));
+        //    });
+        //    return results.Cast<T>();
+        //}
     }
 
     internal static class FinderExtensions
