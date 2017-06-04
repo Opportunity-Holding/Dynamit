@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Dynamit;
 using Starcounter;
 using static Dynamit.Operators;
@@ -65,9 +64,10 @@ namespace DynamitExample
                 new Tuple<string, Operators, dynamic>("Price", EQUALS, 3.25)
             );
 
+            var csa = Finder<DynamicProduct>.Where(("Product_ID", EQUALS, 42), ("Price", EQUALS, 3.25));
+
             #endregion
-
-
+            
             DynamicList list;
             Db.TransactAsync(() =>
             {

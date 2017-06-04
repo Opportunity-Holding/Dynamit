@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Dynamic;
 using Dynamit.ValueObjects.Bool;
 using Dynamit.ValueObjects.Byte;
@@ -16,6 +15,7 @@ using Dynamit.ValueObjects.Uint;
 using Dynamit.ValueObjects.Ulong;
 using Dynamit.ValueObjects.Ushort;
 using Starcounter;
+using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
 namespace Dynamit
 {
@@ -33,12 +33,11 @@ namespace Dynamit
 
         public dynamic Value
         {
-            get { return GetValueObject()?.content; }
+            get => GetValueObject()?.content;
             private set
             {
                 if (value == null) return;
-                int? hash;
-                ValueObjectNo = MakeValueObject(value, out hash);
+                ValueObjectNo = MakeValueObject(value, out int? hash);
                 ValueHash = hash;
             }
         }
@@ -61,23 +60,16 @@ namespace Dynamit
             }
             if (value is IDynamicMetaObjectProvider)
             {
-                ValueTypes valueType;
-                var obj = Helper.GetStaticType(value, out valueType);
+                var obj = Helper.GetStaticType(value, out ValueTypes valueType);
                 hash = obj.GetHashCode();
                 switch (valueType)
                 {
-                    case ValueTypes.String:
-                        return new String1(obj).GetObjectNo();
-                    case ValueTypes.Bool:
-                        return new Bool1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Int:
-                        return new Int1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Long:
-                        return new Long1 {content = obj}.GetObjectNo();
-                    case ValueTypes.Decimal:
-                        return new Decimal1 {content = obj}.GetObjectNo();
-                    case ValueTypes.DateTime:
-                        return new DateTime1 {content = obj}.GetObjectNo();
+                    case ValueTypes.String: return new String1(obj).GetObjectNo();
+                    case ValueTypes.Bool: return new Bool1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Int: return new Int1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Long: return new Long1 {content = obj}.GetObjectNo();
+                    case ValueTypes.Decimal: return new Decimal1 {content = obj}.GetObjectNo();
+                    case ValueTypes.DateTime: return new DateTime1 {content = obj}.GetObjectNo();
                 }
             }
             hash = value.GetHashCode();
@@ -106,14 +98,7 @@ namespace Dynamit
                 Db.Delete(valueObject);
         }
 
-        public void OnDelete()
-        {
-            Clear();
-        }
-
-        public static implicit operator KeyValuePair<string, object>(DKeyValuePair pair)
-        {
-            return new KeyValuePair<string, object>(pair.Key, pair.Value);
-        }
+        public void OnDelete() => Clear();
+        public static implicit operator KVP(DKeyValuePair pair) => new KVP(pair.Key, pair.Value);
     }
 }

@@ -8,41 +8,18 @@ using Starcounter;
 using static System.Dynamic.BindingRestrictions;
 using static System.Linq.Expressions.Expression;
 using static System.Reflection.BindingFlags;
+using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
 namespace Dynamit
 {
     [Database]
-    public abstract class DDictionary : IDictionary<string, object>, ICollection<KeyValuePair<string, object>>,
-        IReadOnlyDictionary<string, object>, IReadOnlyCollection<KeyValuePair<string, object>>,
-        IEnumerable<KeyValuePair<string, object>>, IEnumerable, IEntity, IDynamicMetaObjectProvider
+    public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>,
+        IReadOnlyDictionary<string, object>, IReadOnlyCollection<KVP>, IEnumerable<KVP>, IEnumerable, IEntity,
+        IDynamicMetaObjectProvider
     {
         public string KvpTable { get; }
 
-        protected DDictionary()
-        {
-            KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
-        }
-
-        public IEnumerable<DKeyValuePair> KeyValuePairs =>
-            Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this);
-
-        private IEnumerable<KeyValuePair<string, object>> _keyValuePairs =>
-            Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?", this)
-                .Select(p => new KeyValuePair<string, object>(p.Key, p.Value));
-
-        protected abstract DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null);
-
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-        {
-            return _keyValuePairs.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public void Add(KeyValuePair<string, object> item)
+        public void Add(KVP item)
         {
             if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
             if (item.Value == null) return;
@@ -51,12 +28,7 @@ namespace Dynamit
             NewKeyPair(this, item.Key, item.Value);
         }
 
-        public bool Contains(KeyValuePair<string, object> item)
-        {
-            return _keyValuePairs.Contains(item);
-        }
-
-        public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        public void CopyTo(KVP[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
             if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
@@ -68,36 +40,13 @@ namespace Dynamit
             }
         }
 
-        public bool Remove(KeyValuePair<string, object> item)
-        {
-            return Remove(item.Key);
-        }
-
-        public int Count => KeyValuePairs.Count();
-
-        public bool IsReadOnly => false;
-
-        public bool ContainsKey(string key)
-        {
-            return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                         "WHERE t.Dictionary =? AND t.Key =?", this, key)
-                       .First != null;
-        }
-
-        public void Add(string key, object value)
-        {
-            Add(new KeyValuePair<string, object>(key, value));
-        }
-
         public bool Remove(string key)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
             try
             {
-                var obj = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                                "WHERE t.Dictionary =? AND t.Key =?", this, key)
-                    .First;
+                var obj = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
                 obj?.Delete();
                 return true;
             }
@@ -109,11 +58,8 @@ namespace Dynamit
 
         public bool TryGetValue(string key, out object value)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-            var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                              "WHERE t.Dictionary =? AND t.Key =? ", this, key)
-                .First;
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            var match = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
             value = match?.Value;
             return match != null;
         }
@@ -122,82 +68,46 @@ namespace Dynamit
         {
             get
             {
-                if (key == null)
-                    throw new ArgumentNullException(nameof(key));
-                var match = Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                                  "WHERE t.Dictionary =? AND t.Key =? ", this, key)
-                    .First;
+                if (key == null) throw new ArgumentNullException(nameof(key));
+                var match = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
                 if (match == null) throw new KeyNotFoundException();
                 return match.Value;
             }
             set
             {
-                if (key == null)
-                    throw new ArgumentNullException(nameof(key));
+                if (key == null) throw new ArgumentNullException(nameof(key));
                 if (value is IDynamicMetaObjectProvider)
-                {
-                    ValueTypes valueType;
-                    value = Helper.GetStaticType(value, out valueType);
-                }
-                var dbKvp = Db.SQL<DKeyValuePair>(
-                        $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?", this, key
-                    )
-                    .First;
-                if (value == null)
-                {
-                    if (dbKvp == null) return;
-                    dbKvp.Clear();
-                    dbKvp.Delete();
-                    return;
-                }
-                if (dbKvp == null)
-                    NewKeyPair(this, key, value);
-                else
-                {
-                    dbKvp.Clear();
-                    dbKvp.Delete();
-                    NewKeyPair(this, key, value);
-                }
+                    value = Helper.GetStaticType(value, out ValueTypes valueType);
+                Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
+                if (value != null) NewKeyPair(this, key, value);
             }
         }
 
-        public dynamic SafeGet(string key)
-        {
-            return Db.SQL<DKeyValuePair>($"SELECT t FROM {KvpTable} t " +
-                                         "WHERE t.Dictionary =? AND t.Key =? ", this, key)
-                .First?.Value;
-        }
-
-        public void OnDelete()
-        {
-            foreach (var pair in KeyValuePairs)
-                pair.Delete();
-        }
-
-        public void Clear()
-        {
-            foreach (var pair in KeyValuePairs)
-            {
-                pair.Clear();
-                pair.Delete();
-            }
-        }
-
-        public void ClearAndDelete()
-        {
-            Clear();
-            this.Delete();
-        }
-
+        public IEnumerator<KVP> GetEnumerator() => _kvPairs.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public bool Contains(KVP item) => _kvPairs.Contains(item);
+        public bool Remove(KVP item) => Remove(item.Key);
+        public int Count => KeyValuePairs.Count();
+        public bool IsReadOnly => false;
+        public bool ContainsKey(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First != null;
+        public void Add(string key, object value) => Add(new KVP(key, value));
+        public void OnDelete() => Clear();
+        public void Clear() => KeyValuePairs.ForEach(Db.Delete);
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
         public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
         IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
         IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
-
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
-
+        protected DDictionary() => KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
+        private string KSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?";
+        private string TSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?";
+        public IEnumerable<DKeyValuePair> KeyValuePairs => Db.SQL<DKeyValuePair>(TSQL, this);
+        private IEnumerable<KVP> _kvPairs => Db.SQL<DKeyValuePair>(TSQL, this).Select(p => new KVP(p.Key, p.Value));
+        protected abstract DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null);
         private object Get(string key) => ContainsKey(key) ? this[key] : null;
         private object Set(string key, object value) => this[key] = value;
+        public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Value;
+        public void ClearAndDelete() => this.Delete();
 
         private class DMetaObject : DynamicMetaObject
         {

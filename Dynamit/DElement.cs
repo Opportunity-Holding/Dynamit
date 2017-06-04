@@ -19,7 +19,7 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DElement
+    public abstract class DElement : IEntity
     {
         public DList List;
         public int Index { get; internal set; }
@@ -98,13 +98,13 @@ namespace Dynamit
             return null;
         }
 
+        public void OnDelete() => Clear();
+
         internal void Clear()
         {
             var valueObject = GetValueObject();
             if (valueObject != null)
-            {
                 Db.Delete(valueObject);
-            }
         }
     }
 }

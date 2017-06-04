@@ -16,8 +16,8 @@ namespace Dynamit
         /// <returns>The value for the key/operator pair</returns>
         public object this[string key, Operators op]
         {
-            get { return this[new Tuple<string, Operators>(key, op)]; }
-            set { this[new Tuple<string, Operators>(key, op)] = value; }
+            get => this[new Tuple<string, Operators>(key, op)];
+            set => this[new Tuple<string, Operators>(key, op)] = value;
         }
 
         internal void ForEach(Action<KeyValuePair<Tuple<string, Operators>, object>, int> action)
@@ -36,6 +36,13 @@ namespace Dynamit
     public static class Finder<T> where T : DDictionary
     {
         private static IEnumerable<DDictionary> EqualitySQL(Tuple<string, Operators, object> c, string kvp)
+        {
+            var opString = c.Item2 == EQUALS ? "=?" : "<>?";
+            var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
+            return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
+        }
+
+        private static IEnumerable<DDictionary> EqualitySQL(ValueTuple<string, Operators, object> c, string kvp)
         {
             var opString = c.Item2 == EQUALS ? "=?" : "<>?";
             var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
@@ -77,6 +84,19 @@ namespace Dynamit
             });
             return results.Cast<T>();
         }
+
+        public static IEnumerable<T> Where(params ValueTuple<string, Operators, dynamic>[] equalityConditions)
+        {
+            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            if (equalityConditions?.Any() != true) return All;
+            var results = new HashSet<DDictionary>();
+            equalityConditions.ForEach((cond, index) =>
+            {
+                if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
+                else results.IntersectWith(EqualitySQL(cond, kvpTable));
+            });
+            return results.Cast<T>();
+        }
     }
 
     internal static class FinderExtensions
@@ -85,6 +105,11 @@ namespace Dynamit
         {
             var i = 0;
             foreach (var e in ienum) action(e, i++);
+        }
+
+        internal static void ForEach<T>(this IEnumerable<T> ienum, Action<T> action)
+        {
+            foreach (var e in ienum) action(e);
         }
     }
 }
