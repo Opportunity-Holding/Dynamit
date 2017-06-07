@@ -107,8 +107,7 @@ namespace Dynamit
         private object Get(string key) => ContainsKey(key) ? this[key] : null;
         private object Set(string key, object value) => this[key] = value;
         public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Value;
-        public void ClearAndDelete() => this.Delete();
-
+ 
         private class DMetaObject : DynamicMetaObject
         {
             internal DMetaObject(Expression e, DDictionary d) : base(e, BindingRestrictions.Empty, d)
