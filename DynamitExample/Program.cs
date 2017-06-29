@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Dynamit;
 using Starcounter;
-using static Dynamit.Operators;
+
+// ReSharper disable All
 
 namespace DynamitExample
 {
@@ -51,21 +52,20 @@ namespace DynamitExample
 
             var xas = Finder<DynamicProduct>.All.Where(ob => ob["Product_ID"] == 42);
 
-            Db.TransactAsync(() => { dsa.Banana = 123123.1; });
+            Db.TransactAsync(() => dsa.Banana = 123123.1);
 
             var o = product is IDictionary<string, dynamic>;
 
-            var sdsa = Finder<DynamicProduct>
-                .Where(new Conditions {["Group", EQUALS] = "A1"})
-                .Where(da => da.SafeGet("Price") > 3);
+            //var sdsa = Finder<DynamicProduct>
+            //    .Where(new Conditions {["Group", EQUALS] = "A1"})
+            //    .Where(da => da.SafeGet("Price") > 3);
 
-            Finder<DynamicProduct>.Where(
-                new Tuple<string, Operators, dynamic>("Product_ID", EQUALS, 42),
-                new Tuple<string, Operators, dynamic>("Price", EQUALS, 3.25)
-            );
+            var prod = Finder<DynamicProduct>.First(("Product_ID", "=", 42), ("Price", "=", 3.25));
+
+            var c = prod["Product_ID"];
 
             #endregion
-            
+
             DynamicList list;
             Db.TransactAsync(() =>
             {

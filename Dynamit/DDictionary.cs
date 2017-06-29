@@ -10,15 +10,26 @@ using static System.Linq.Expressions.Expression;
 using static System.Reflection.BindingFlags;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
+#pragma warning disable 1591
+
 namespace Dynamit
 {
+    /// <summary>
+    /// A dynamic persistent database type
+    /// </summary>
     [Database]
     public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>,
         IReadOnlyDictionary<string, object>, IReadOnlyCollection<KVP>, IEnumerable<KVP>, IEnumerable, IEntity,
         IDynamicMetaObjectProvider
     {
+        /// <summary>
+        /// The name of the table where key-value pairs are stored
+        /// </summary>
         public string KvpTable { get; }
 
+        /// <summary>
+        /// Add a new key-value pair to the dictionary
+        /// </summary>
         public void Add(KVP item)
         {
             if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
@@ -28,6 +39,9 @@ namespace Dynamit
             NewKeyPair(this, item.Key, item.Value);
         }
 
+        /// <summary>
+        /// Copy the key-value pairs of this dictionary to an array
+        /// </summary>
         public void CopyTo(KVP[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -40,6 +54,9 @@ namespace Dynamit
             }
         }
 
+        /// <summary>
+        /// Removes the key-value pair with the provided key
+        /// </summary>
         public bool Remove(string key)
         {
             if (key == null)
@@ -77,7 +94,7 @@ namespace Dynamit
             {
                 if (key == null) throw new ArgumentNullException(nameof(key));
                 if (value is IDynamicMetaObjectProvider)
-                    value = Helper.GetStaticType(value, out ValueTypes valueType);
+                    value = Helper.GetStaticType(value, out ValueTypes _);
                 Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
                 if (value != null) NewKeyPair(this, key, value);
             }
@@ -106,8 +123,12 @@ namespace Dynamit
         protected abstract DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null);
         private object Get(string key) => ContainsKey(key) ? this[key] : null;
         private object Set(string key, object value) => this[key] = value;
+
+        /// <summary>
+        /// Gets the value of a key from a DDictionary, or null if the dictionary does not contain the key.
+        /// </summary>
         public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Value;
- 
+
         private class DMetaObject : DynamicMetaObject
         {
             internal DMetaObject(Expression e, DDictionary d) : base(e, BindingRestrictions.Empty, d)

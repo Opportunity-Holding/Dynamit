@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Starcounter;
 
+#pragma warning disable 1591
+
 namespace Dynamit
 {
     [Database]

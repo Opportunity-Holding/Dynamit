@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
-<package >
+
+<package>
   <metadata>
     <id>Dynamit</id>
-    <version>0.1.10</version>
+    <version>0.1.11</version>
     <title>Dynamit</title>
     <authors>Erik von Krusenstierna</authors>
     <owners>Mopedo AB</owners>
@@ -14,5 +15,8 @@
     <licenseUrl>https://goo.gl/eJS8o9</licenseUrl>
     <projectUrl>https://goo.gl/q4u6EY</projectUrl>
     <iconUrl>https://storage.googleapis.com/mopedo-resources/Mopedo_logo_whitefull.png</iconUrl>
+    <dependencies>
+      <dependency id="System.ValueTuple" version="4.3.1" />
+    </dependencies>
   </metadata>
 </package>

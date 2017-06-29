@@ -17,6 +17,8 @@ using Dynamit.ValueObjects.Ushort;
 using Starcounter;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
+#pragma warning disable 1591
+
 namespace Dynamit
 {
     [Database]

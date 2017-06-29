@@ -4,6 +4,9 @@ using Starcounter;
 
 namespace Dynamit
 {
+    /// <summary>
+    /// The main configuration class for Dynamit
+    /// </summary>
     public static class DynamitConfig
     {
         internal static bool EscapeStrings;

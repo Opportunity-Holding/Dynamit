@@ -16,6 +16,8 @@ using Dynamit.ValueObjects.Ulong;
 using Dynamit.ValueObjects.Ushort;
 using Starcounter;
 
+#pragma warning disable 1591
+
 namespace Dynamit
 {
     [Database]

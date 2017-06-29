@@ -2,77 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
-using static Dynamit.Operators;
 
 namespace Dynamit
 {
-    public class Conditions : Dictionary<Tuple<string, Operators>, object>
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="key">The key to check against</param>
-        /// <param name="op">An equality operator, either '=' or '!='</param>
-        /// <returns>The value for the key/operator pair</returns>
-        public object this[string key, Operators op]
-        {
-            get => this[new Tuple<string, Operators>(key, op)];
-            set => this[new Tuple<string, Operators>(key, op)] = value;
-        }
-
-        internal void ForEach(Action<KeyValuePair<Tuple<string, Operators>, object>, int> action)
-        {
-            var i = 0;
-            foreach (var e in this) action(e, i++);
-        }
-    }
-
-    public enum Operators
-    {
-        EQUALS,
-        NOT_EQUALS
-    }
-
+    /// <summary>
+    /// Provides get methods for DDictionary types
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public static class Finder<T> where T : DDictionary
     {
-        private static IEnumerable<DDictionary> EqualitySQL(Tuple<string, Operators, object> c, string kvp)
+        private static IEnumerable<DDictionary> EqualitySQL((string key, Operator op, object value) cond, string kvp)
         {
-            var opString = c.Item2 == EQUALS ? "=?" : "<>?";
-            var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
-            return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
+            var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {cond.op.SQL}?";
+            return Db.SQL<DDictionary>(SQL, cond.key, cond.value.GetHashCode());
         }
 
-        //private static IEnumerable<DDictionary> EqualitySQL(ValueTuple<string, Operators, object> c, string kvp)
-        //{
-        //    var opString = c.Item2 == EQUALS ? "=?" : "<>?";
-        //    var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {opString}";
-        //    return Db.SQL<DDictionary>(SQL, c.Item1, c.Item3.GetHashCode());
-        //}
-
+        /// <summary>
+        /// Returns all entities of the given type
+        /// </summary>
         public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which ALL of the
-        /// provided equality conditions are true.
+        /// provided equality conditions are true. If no conditions are given, returns all entities found. 
+        /// If no entities are found, returns null.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="equalityConditions"></param>
         /// <returns></returns>
-        public static IEnumerable<T> Where(Conditions equalityConditions)
-        {
-            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
-            if (equalityConditions?.Any() != true) return All;
-            var results = new HashSet<DDictionary>();
-            equalityConditions.ForEach((cond, index) =>
-            {
-                var condTuple = new Tuple<string, Operators, dynamic>(cond.Key.Item1, cond.Key.Item2, cond.Value);
-                if (index == 0) results.UnionWith(EqualitySQL(condTuple, kvpTable));
-                else results.IntersectWith(EqualitySQL(condTuple, kvpTable));
-            });
-            return results.Cast<T>();
-        }
-
-        public static IEnumerable<T> Where(params Tuple<string, Operators, dynamic>[] equalityConditions)
+        public static IEnumerable<T> Where(params (string key, Operator op, dynamic value)[] equalityConditions)
         {
             var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
             if (equalityConditions?.Any() != true) return All;
@@ -85,18 +43,25 @@ namespace Dynamit
             return results.Cast<T>();
         }
 
-        //public static IEnumerable<T> Where(params ValueTuple<string, Operators, dynamic>[] equalityConditions)
-        //{
-        //    var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
-        //    if (equalityConditions?.Any() != true) return All;
-        //    var results = new HashSet<DDictionary>();
-        //    equalityConditions.ForEach((cond, index) =>
-        //    {
-        //        if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
-        //        else results.IntersectWith(EqualitySQL(cond, kvpTable));
-        //    });
-        //    return results.Cast<T>();
-        //}
+        /// <summary>
+        /// Returns the first DDictionary of the given derived type for which ALL of the
+        /// provided equality conditions are true. If no conditions are given, returns the
+        /// first entity found. If no entity is found, returns null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="equalityConditions"></param>
+        public static T First(params (string key, Operator op, dynamic value)[] equalityConditions)
+        {
+            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            if (equalityConditions?.Any() != true) return All.FirstOrDefault();
+            var results = new HashSet<DDictionary>();
+            equalityConditions.ForEach((cond, index) =>
+            {
+                if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
+                else results.IntersectWith(EqualitySQL(cond, kvpTable));
+            });
+            return results.Cast<T>().FirstOrDefault();
+        }
     }
 
     internal static class FinderExtensions
