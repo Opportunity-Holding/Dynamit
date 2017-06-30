@@ -8,7 +8,10 @@ namespace Dynamit
     /// </summary>
     public class DDictionaryAttribute : Attribute
     {
-        internal readonly Type KeyValuePairTable;
+        /// <summary>
+        /// The type that holds the key-value pairs for the DDictionary
+        /// </summary>
+        public readonly Type KeyValuePairTable;
 
         /// <summary>
         /// Creates a new instance of the DDictionaryAttribute class
