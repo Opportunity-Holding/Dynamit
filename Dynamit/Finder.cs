@@ -9,7 +9,7 @@ namespace Dynamit
     /// Provides get methods for DDictionary types
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public static class Finder<T> where T : DDictionary
+    public static class Finder<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
     {
         private static QueryResultRows<T> EqualitySQL((string key, Operator op, object value) cond, string kvp)
         {
@@ -33,7 +33,7 @@ namespace Dynamit
         /// <returns></returns>
         public static IEnumerable<T> Where(params (string key, Operator op, dynamic value)[] equalityConditions)
         {
-            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            var kvpTable = TableInfo<T>.KvpTable;
             if (equalityConditions?.Any() != true) return All;
             var results = new HashSet<T>();
             equalityConditions.ForEach((cond, index) =>
@@ -53,7 +53,7 @@ namespace Dynamit
         /// <param name="equalityConditions"></param>
         public static T First(params (string key, Operator op, dynamic value)[] equalityConditions)
         {
-            var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
+            var kvpTable = TableInfo<T>.KvpTable;
             if (equalityConditions?.Any() != true) return All.FirstOrDefault();
             var results = new HashSet<T>();
             equalityConditions.ForEach((cond, index) =>

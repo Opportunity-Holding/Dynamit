@@ -5,7 +5,7 @@ namespace Dynamit
     internal class DDictionaryException : Exception
     {
         public DDictionaryException(Type type)
-            : base($"Missing DDictionaryAttribute decoration for type '{type.FullName}'")
+            : base($"Missing IDDictionary interface implementation for type '{type.FullName}'")
         {
         }
     }

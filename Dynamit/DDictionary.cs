@@ -36,7 +36,7 @@ namespace Dynamit
             if (item.Value == null) return;
             if (ContainsKey(item.Key))
                 throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
-            NewKeyPair(this, item.Key, item.Value);
+            MakeKeyPair(item.Key, item.Value);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Dynamit
                 if (value is IDynamicMetaObjectProvider)
                     value = Helper.GetStaticType(value, out ValueTypes _);
                 Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
-                if (value != null) NewKeyPair(this, key, value);
+                if (value != null) MakeKeyPair(key, value);
             }
         }
 
@@ -115,12 +115,12 @@ namespace Dynamit
         IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
         IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
-        protected DDictionary() => KvpTable = GetType().GetAttribute<DDictionaryAttribute>().KeyValuePairTable.FullName;
+        protected DDictionary() => KvpTable = DynamitConfig.KvpMappings[GetType().FullName];
+        private void MakeKeyPair(string key, dynamic value) => ((dynamic) this).NewKeyPair((dynamic) this, key, value);
         private string KSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?";
         private string TSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?";
         public IEnumerable<DKeyValuePair> KeyValuePairs => Db.SQL<DKeyValuePair>(TSQL, this);
         private IEnumerable<KVP> _kvPairs => Db.SQL<DKeyValuePair>(TSQL, this).Select(p => new KVP(p.Key, p.Value));
-        protected abstract DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null);
         private object Get(string key) => ContainsKey(key) ? this[key] : null;
         private object Set(string key, object value) => this[key] = value;
 

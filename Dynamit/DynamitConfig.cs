@@ -1,15 +1,23 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
 
 namespace Dynamit
 {
+    public static class TableInfo<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
+    {
+        public static string KvpTable => DynamitConfig.KvpMappings[typeof(T).FullName];
+    }
+
     /// <summary>
     /// The main configuration class for Dynamit
     /// </summary>
     public static class DynamitConfig
     {
         internal static bool EscapeStrings;
+        internal static IReadOnlyDictionary<string, string> KvpMappings { get; private set; }
 
         /// <summary>
         /// Sets up indexes and callbacks for Dynamit database classes to 
@@ -22,9 +30,13 @@ namespace Dynamit
         {
             EscapeStrings = enableEscapeStrings;
             var dicts = typeof(DDictionary).GetConcreteSubclasses();
-            var dictsWithMissingAttribute = dicts.Where(d => d.GetAttribute<DDictionaryAttribute>() == null).ToList();
-            if (dictsWithMissingAttribute.Any())
-                throw new DDictionaryException(dictsWithMissingAttribute.First());
+            var dictsWithMissingInterface = dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
+            if (dictsWithMissingInterface.Any())
+                throw new DDictionaryException(dictsWithMissingInterface.First());
+            var kvpMappings = new Dictionary<string, string>();
+            foreach (var dict in dicts)
+                kvpMappings[dict.FullName] = dict.GetInterface("IDDictionary`2").GetGenericArguments()[1].FullName;
+            KvpMappings = kvpMappings;
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
             var lists = typeof(DList).GetConcreteSubclasses();
             var listsWithMissingAttribute = lists.Where(d => d.GetAttribute<DListAttribute>() == null).ToList();

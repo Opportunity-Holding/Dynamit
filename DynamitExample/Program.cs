@@ -18,8 +18,6 @@ namespace DynamitExample
             foreach (var x in Db.SQL<DList>($"SELECT t FROM {typeof(DList).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
 
-            #region DDictionary tests
-
             DynamicProduct product = null;
             Db.TransactAsync(() =>
             {
@@ -34,6 +32,8 @@ namespace DynamitExample
             });
 
             var s = product["Product_date"].AddDays(2).ToString("O");
+
+            var sdsa = Finder<DynamicProduct>.All;
 
             dynamic pr = null;
 
@@ -64,8 +64,6 @@ namespace DynamitExample
 
             var c = prod["Product_ID"];
 
-            #endregion
-
             DynamicList list;
             Db.TransactAsync(() =>
             {
@@ -81,13 +79,10 @@ namespace DynamitExample
         }
     }
 
-    [DDictionary(typeof(DynamicProductKeyValuePair))]
-    public class DynamicProduct : DDictionary
+    public class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKeyValuePair>
     {
-        protected override DKeyValuePair NewKeyPair(DDictionary dict, string key, object value = null)
-        {
-            return new DynamicProductKeyValuePair(dict, key, value);
-        }
+        public DynamicProductKeyValuePair NewKeyPair(DynamicProduct dict, string key, object value = null) =>
+            new DynamicProductKeyValuePair(dict, key, value);
     }
 
     public class DynamicProductKeyValuePair : DKeyValuePair
