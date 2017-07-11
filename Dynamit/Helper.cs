@@ -89,7 +89,11 @@ namespace Dynamit
                                 }
                                 catch
                                 {
-                                    throw new Exception("Illegal type: " + value.GetType());
+                                    Type type = value.GetType();
+                                    if (type.FullName == "Newtonsoft.Json.Linq.JObject")
+                                        throw new Exception("Illegal value type for dynamic table: Dynamic tables " +
+                                                            "cannot contain inner objects");
+                                    throw new Exception("Illegal value type for dynamic table: " + value.GetType());
                                 }
                             }
                         }

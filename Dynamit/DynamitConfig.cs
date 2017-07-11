@@ -8,12 +8,19 @@ namespace Dynamit
     /// <summary>
     /// Gets information about a DDictionary table
     /// </summary>
-    public static class TableInfo<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
+    public static class TableInfo<T> where T : class
     {
         /// <summary>
         /// The name of the key-value pair table
         /// </summary>
-        public static string KvpTable => DynamitConfig.KvpMappings[typeof(T).FullName];
+        public static string KvpTable
+        {
+            get
+            {
+                DynamitConfig.KvpMappings.TryGetValue(typeof(T).FullName, out var kvp);
+                return kvp;
+            }
+        }
     }
 
     /// <summary>
