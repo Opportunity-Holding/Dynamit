@@ -1,13 +1,18 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
 
 namespace Dynamit
 {
+    /// <summary>
+    /// Gets information about a DDictionary table
+    /// </summary>
     public static class TableInfo<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
     {
+        /// <summary>
+        /// The name of the key-value pair table
+        /// </summary>
         public static string KvpTable => DynamitConfig.KvpMappings[typeof(T).FullName];
     }
 
