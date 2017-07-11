@@ -11,16 +11,17 @@ namespace Dynamit
     /// <typeparam name="T"></typeparam>
     public static class Finder<T> where T : DDictionary
     {
-        private static IEnumerable<DDictionary> EqualitySQL((string key, Operator op, object value) cond, string kvp)
+        private static QueryResultRows<T> EqualitySQL((string key, Operator op, object value) cond, string kvp)
         {
-            var SQL = $"SELECT t.Dictionary FROM {kvp} t WHERE t.Key =? AND t.ValueHash {cond.op.SQL}?";
-            return Db.SQL<DDictionary>(SQL, cond.key, cond.value.GetHashCode());
+            var SQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
+                      $"FROM {kvp} t WHERE t.Key =? AND t.ValueHash {cond.op.SQL}?";
+            return Db.SQL<T>(SQL, cond.key, cond.value.GetHashCode());
         }
 
         /// <summary>
         /// Returns all entities of the given type
         /// </summary>
-        public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
+        public static QueryResultRows<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which ALL of the
@@ -34,13 +35,13 @@ namespace Dynamit
         {
             var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
             if (equalityConditions?.Any() != true) return All;
-            var results = new HashSet<DDictionary>();
+            var results = new HashSet<T>();
             equalityConditions.ForEach((cond, index) =>
             {
                 if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
                 else results.IntersectWith(EqualitySQL(cond, kvpTable));
             });
-            return results.Cast<T>();
+            return results;
         }
 
         /// <summary>
@@ -54,13 +55,13 @@ namespace Dynamit
         {
             var kvpTable = typeof(T).GetAttribute<DDictionaryAttribute>()?.KeyValuePairTable.FullName;
             if (equalityConditions?.Any() != true) return All.FirstOrDefault();
-            var results = new HashSet<DDictionary>();
+            var results = new HashSet<T>();
             equalityConditions.ForEach((cond, index) =>
             {
                 if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
                 else results.IntersectWith(EqualitySQL(cond, kvpTable));
             });
-            return results.Cast<T>().FirstOrDefault();
+            return results.FirstOrDefault();
         }
     }
 
