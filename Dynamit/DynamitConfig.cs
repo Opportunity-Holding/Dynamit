@@ -30,6 +30,16 @@ namespace Dynamit
     {
         internal static bool EscapeStrings;
         internal static IReadOnlyDictionary<string, string> KvpMappings { get; private set; }
+        internal static IList<Type> Dicts { get; private set; }
+
+        static DynamitConfig()
+        {
+            Dicts = typeof(DDictionary).GetConcreteSubclasses();
+            var kvpMappings = new Dictionary<string, string>();
+            foreach (var dict in Dicts)
+                kvpMappings[dict.FullName] = dict.GetInterface("IDDictionary`2").GetGenericArguments()[1].FullName;
+            KvpMappings = kvpMappings;
+        }
 
         /// <summary>
         /// Sets up indexes and callbacks for Dynamit database classes to 
@@ -41,14 +51,9 @@ namespace Dynamit
         public static void Init(bool setupIndexes = true, bool enableEscapeStrings = false)
         {
             EscapeStrings = enableEscapeStrings;
-            var dicts = typeof(DDictionary).GetConcreteSubclasses();
-            var dictsWithMissingInterface = dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
+            var dictsWithMissingInterface = Dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
             if (dictsWithMissingInterface.Any())
                 throw new DDictionaryException(dictsWithMissingInterface.First());
-            var kvpMappings = new Dictionary<string, string>();
-            foreach (var dict in dicts)
-                kvpMappings[dict.FullName] = dict.GetInterface("IDDictionary`2").GetGenericArguments()[1].FullName;
-            KvpMappings = kvpMappings;
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
             var lists = typeof(DList).GetConcreteSubclasses();
             var listsWithMissingAttribute = lists.Where(d => d.GetAttribute<DListAttribute>() == null).ToList();
@@ -56,6 +61,7 @@ namespace Dynamit
                 throw new DListException(listsWithMissingAttribute.First());
             var elements = typeof(DElement).GetConcreteSubclasses();
             if (!setupIndexes) return;
+
             foreach (var kvp in pairs)
             {
                 CreateIndex(kvp, "Dictionary");
