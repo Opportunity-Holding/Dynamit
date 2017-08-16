@@ -24,9 +24,16 @@ namespace Dynamit
         public static QueryResultRows<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
+        /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<T> Where(string key, Operator op, dynamic value) =>
+            EqualitySQL((key, op, value), TableInfo<T>.KvpTable);
+
+        /// <summary>
         /// Returns all DDictionaries of the given derived type for which ALL of the
         /// provided equality conditions are true. If no conditions are given, returns all entities found. 
-        /// If no entities are found, returns null.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="equalityConditions"></param>
