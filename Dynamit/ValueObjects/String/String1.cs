@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Starcounter;
+﻿using Starcounter;
 using static Dynamit.DynamitConfig;
 
 #pragma warning disable 1591
@@ -13,9 +12,11 @@ namespace Dynamit.ValueObjects.String
         public String1(string value) => content = EscapeStrings ? Escaped(value) : value;
         public override string ToString() => content;
 
-        private static string Escaped(string input) =>
-            input.First() == '\"' && input.Last() == '\"'
-                ? input.Substring(1, input.Length - 2)
-                : input;
+        private static string Escaped(string input)
+        {
+            if (input[0] == '\"' && input[input.Length - 1] == '\"')
+                return input.Substring(1, input.Length - 2);
+            return input;
+        }
     }
 }

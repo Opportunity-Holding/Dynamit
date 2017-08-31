@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using Dynamit.ValueObjects;
 using Starcounter;
 using static System.Dynamic.BindingRestrictions;
 using static System.Linq.Expressions.Expression;
@@ -15,7 +16,7 @@ using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 namespace Dynamit
 {
     /// <summary>
-    /// A dynamic persistent database type
+    /// A dynamic persistent database type for Starcounter applications
     /// </summary>
     [Database]
     public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>,
@@ -27,9 +28,7 @@ namespace Dynamit
         /// </summary>
         public string KvpTable { get; }
 
-        /// <summary>
-        /// Add a new key-value pair to the dictionary
-        /// </summary>
+        /// <inheritdoc />
         public void Add(KVP item)
         {
             if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
@@ -39,9 +38,7 @@ namespace Dynamit
             MakeKeyPair(item.Key, item.Value);
         }
 
-        /// <summary>
-        /// Copy the key-value pairs of this dictionary to an array
-        /// </summary>
+        /// <inheritdoc />
         public void CopyTo(KVP[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -54,9 +51,7 @@ namespace Dynamit
             }
         }
 
-        /// <summary>
-        /// Removes the key-value pair with the provided key
-        /// </summary>
+        /// <inheritdoc />
         public bool Remove(string key)
         {
             if (key == null)
@@ -94,7 +89,7 @@ namespace Dynamit
             {
                 if (key == null) throw new ArgumentNullException(nameof(key));
                 if (value is IDynamicMetaObjectProvider)
-                    value = Helper.GetStaticType(value, out ValueTypes _);
+                    value = ValueObject.GetStaticType(value);
                 Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
                 if (value != null) MakeKeyPair(key, value);
             }
@@ -140,7 +135,7 @@ namespace Dynamit
                 expression: Call
                 (
                     instance: Convert(Expression, LimitType),
-                    method: typeof(DDictionary).GetMethod("Get", Instance | NonPublic),
+                    method: typeof(DDictionary).GetMethod(nameof(Get), Instance | NonPublic),
                     arguments: Constant(binder.Name)
                 ),
                 restrictions: GetTypeRestriction(Expression, LimitType)
@@ -152,7 +147,7 @@ namespace Dynamit
                     expression: Call
                     (
                         instance: Convert(Expression, LimitType),
-                        method: typeof(DDictionary).GetMethod("Set", Instance | NonPublic),
+                        method: typeof(DDictionary).GetMethod(nameof(Set), Instance | NonPublic),
                         arg0: Constant(binder.Name),
                         arg1: Convert(value.Expression, typeof(object))
                     ),

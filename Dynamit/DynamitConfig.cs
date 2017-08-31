@@ -17,7 +17,7 @@ namespace Dynamit
         {
             get
             {
-                DynamitConfig.KvpMappings.TryGetValue(typeof(T).FullName, out var kvp);
+                DynamitConfig.KvpMappings.TryGetValue(typeof(T).FullName ?? "", out var kvp);
                 return kvp;
             }
         }
@@ -29,15 +29,15 @@ namespace Dynamit
     public static class DynamitConfig
     {
         internal static bool EscapeStrings;
-        internal static IReadOnlyDictionary<string, string> KvpMappings { get; private set; }
-        internal static IList<Type> Dicts { get; private set; }
+        internal static IReadOnlyDictionary<string, string> KvpMappings { get; }
+        internal static IList<Type> Dicts { get; }
 
         static DynamitConfig()
         {
             Dicts = typeof(DDictionary).GetConcreteSubclasses();
             var kvpMappings = new Dictionary<string, string>();
-            foreach (var dict in Dicts)
-                kvpMappings[dict.FullName] = dict.GetInterface("IDDictionary`2").GetGenericArguments()[1].FullName;
+            Dicts.ForEach(dict => kvpMappings[dict.FullName ?? throw new Exception()] =
+                dict.GetInterface(typeof(IDDictionary<,>).FullName).GetGenericArguments()[1].FullName);
             KvpMappings = kvpMappings;
         }
 
@@ -78,11 +78,12 @@ namespace Dynamit
 
         private static string Fnuttify(this string sqlKey) => $"\"{sqlKey.Replace(".", "\".\"")}\"";
 
-        private static void CreateIndex(Type table, params string[] cols)
+        private static void CreateIndex(Type table, params string[] c)
         {
-            var indexName = $"DYNAMIT_GENERATED_INDEX_FOR_{table.FullName.Replace('.', '_')}__{string.Join("_", cols)}";
+            if (table == null) throw new ArgumentNullException(nameof(table));
+            var indexName = $"DYNAMIT_GENERATED_INDEX_FOR_{table.FullName?.Replace('.', '_')}__{string.Join("_", c)}";
             if (Db.SQL("SELECT i FROM Starcounter.Metadata.\"Index\" i WHERE Name =?", indexName).First == null)
-                Db.SQL($"CREATE INDEX {indexName} ON {table.FullName} ({string.Join(",", cols.Select(Fnuttify))})");
+                Db.SQL($"CREATE INDEX {indexName} ON {table.FullName} ({string.Join(",", c.Select(Fnuttify))})");
         }
     }
 }

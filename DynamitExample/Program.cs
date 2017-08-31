@@ -4,6 +4,7 @@ using System.Linq;
 using Dynamit;
 using Starcounter;
 using static Dynamit.Operators;
+
 // ReSharper disable All
 
 namespace DynamitExample
@@ -65,8 +66,8 @@ namespace DynamitExample
             var c = prod["Product_ID"];
 
             Finder<Product>
-                .Where(("Group", EQUALS, "A1"))	// C#7 ValueTuple literal
-                .Where(da => da.SafeGet("Price") > 3);   // regular LINQ
+                .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
+                .Where(da => da.SafeGet("Price") > 3); // regular LINQ
 
             DynamicList list;
             Db.TransactAsync(() =>
@@ -80,6 +81,21 @@ namespace DynamitExample
             });
 
             var xs = "";
+        }
+    }
+
+    public class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKVP>
+    {
+        public DynamicProductKVP NewKeyPair(DynamicProduct dict, string key, object value = null)
+        {
+            return new DynamicProductKVP(dict, key, value);
+        }
+    }
+
+    public class DynamicProductKVP : DKeyValuePair
+    {
+        public DynamicProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value)
+        {
         }
     }
 
@@ -119,8 +135,10 @@ namespace DynamitExample
     public class Condition : IEntity
     {
         public string PropertyName;
+
         //public OperatorsEnum Operator;
-        public ConditionValue Value;  // This is our DValue member
+        public ConditionValue Value; // This is our DValue member
+
         public void OnDelete() => Value?.Delete();
     }
 
@@ -128,6 +146,4 @@ namespace DynamitExample
     {
         public ConditionValue(object value) => Value = value;
     }
-
-
 }
