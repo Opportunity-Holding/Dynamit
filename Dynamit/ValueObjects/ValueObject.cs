@@ -25,7 +25,7 @@ namespace Dynamit.ValueObjects
     {
         internal static (ulong? objectNo, int? hash) Make(object value)
         {
-            var hash = value.GetHashCode();
+            var hash = value?.GetHashCode();
             switch (value)
             {
                 case string @string: return (new String1(@string).GetObjectNo(), hash);
