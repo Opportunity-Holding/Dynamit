@@ -34,6 +34,7 @@ namespace DynamitTester
             {
                 createdDict = new MyDict();
                 dynamic d = createdDict;
+                d.Id = 1;
                 d.Bool = true;
                 d.Byte = (byte) 125;
                 d.DateTime = DateTime.Now;
@@ -50,6 +51,22 @@ namespace DynamitTester
                 d.Ushort = (ushort) 12331;
                 d.Null = null;
                 d.Thing = "SwooBoo";
+
+                new MyDict
+                {
+                    ["Id"] = 2,
+                    ["Byte"] = (byte) 12,
+                    ["String"] = "A",
+                    ["Bool"] = true
+                };
+
+                new MyDict
+                {
+                    ["Id"] = 3,
+                    ["Byte"] = (byte) 122,
+                    ["String"] = "A",
+                    ["Bool"] = true
+                };
             });
 
             Debug.Assert(!createdDict.ContainsKey("Null"));
@@ -64,6 +81,28 @@ namespace DynamitTester
             Debug.Assert(Db.SQL<DDictionary>("SELECT t FROM Dynamit.DDictionary t").Any());
             Debug.Assert(Db.SQL<DKeyValuePair>("SELECT t FROM Dynamit.DKeyValuePair t").Any());
             Debug.Assert(Db.SQL<ValueObject>("SELECT t FROM Dynamit.ValueObjects.ValueObject t").Any());
+
+            #endregion
+
+            #region Finder
+
+            var all = Finder<MyDict>.All;
+            var As = Finder<MyDict>.Where("String", Operator.EQUALS, "A");
+            var third = Finder<MyDict>.Where("Id", Operator.EQUALS, 3);
+            var firstAndSecond = Finder<MyDict>.All.Where(dict => dict["Id"] < 3);
+            var second = Finder<MyDict>.Where(("String", Operator.EQUALS, "A"), ("Byte", Operator.NOT_EQUALS, 122));
+            var alsoThird = Finder<MyDict>.Where(("String", Operator.EQUALS, "A")).Where(dict => dict["Byte"] == 122);
+
+            Debug.Assert(all.Count() == 3);
+            Debug.Assert(As.Count() == 2);
+            bool thirdOk = third.Count() == 1 && third.First()["Id"] == 3;
+            Debug.Assert(thirdOk);
+            var firstAndSecondOk = firstAndSecond.Count() == 2;
+            Debug.Assert(firstAndSecondOk);
+            bool secondOk = second.Count() == 1 && second.First()["Id"] == 2;
+            Debug.Assert(secondOk);
+            bool alsoThirdOk = third.Count() == 1 && third.First()["Id"] == 3;
+            Debug.Assert(alsoThirdOk);
 
             #endregion
 
@@ -110,7 +149,12 @@ namespace DynamitTester
 
             #region Deleting rows
 
-            Db.TransactAsync(() => createdDict.Delete());
+            Db.TransactAsync(() =>
+            {
+                createdDict.Delete();
+                second.First().Delete();
+                third.First().Delete();
+            });
 
             #endregion
 
