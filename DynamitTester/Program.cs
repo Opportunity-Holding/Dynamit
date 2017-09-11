@@ -1,11 +1,13 @@
 ﻿using Dynamit;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Dynamit.ValueObjects;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Starcounter;
+using static System.Diagnostics.Debug;
 
 // ReSharper disable All
 
@@ -29,11 +31,11 @@ namespace DynamitTester
 
             #region Inserting and removing values of various types
 
-            MyDict createdDict = null;
+            MyDict myDict = null;
             Db.TransactAsync(() =>
             {
-                createdDict = new MyDict();
-                dynamic d = createdDict;
+                myDict = new MyDict();
+                dynamic d = myDict;
                 d.Id = 1;
                 d.Bool = true;
                 d.Byte = (byte) 125;
@@ -69,18 +71,76 @@ namespace DynamitTester
                 };
             });
 
-            Debug.Assert(!createdDict.ContainsKey("Null"));
-            Debug.Assert(createdDict.ContainsKey("Thing"));
-            Db.TransactAsync(() => createdDict["Thing"] = null);
-            Debug.Assert(!createdDict.ContainsKey("Thing"));
+            Assert(!myDict.ContainsKey("Null"));
+            Assert(myDict.ContainsKey("Thing"));
+            Db.TransactAsync(() => myDict["Thing"] = null);
+            Assert(!myDict.ContainsKey("Thing"));
 
             #endregion
 
             #region Checking that things exist
 
-            Debug.Assert(Db.SQL<DDictionary>("SELECT t FROM Dynamit.DDictionary t").Any());
-            Debug.Assert(Db.SQL<DKeyValuePair>("SELECT t FROM Dynamit.DKeyValuePair t").Any());
-            Debug.Assert(Db.SQL<ValueObject>("SELECT t FROM Dynamit.ValueObjects.ValueObject t").Any());
+            Assert(Db.SQL<DDictionary>("SELECT t FROM Dynamit.DDictionary t").Any());
+            Assert(Db.SQL<DKeyValuePair>("SELECT t FROM Dynamit.DKeyValuePair t").Any());
+            Assert(Db.SQL<ValueObject>("SELECT t FROM Dynamit.ValueObjects.ValueObject t").Any());
+
+            #endregion
+
+            #region Type consistency assertions
+
+            dynamic dyn = myDict;
+            Assert(dyn.Id is int);
+            Assert(dyn.Bool is bool);
+            Assert(dyn.Byte is byte);
+            Assert(dyn.DateTime is DateTime);
+            Assert(dyn.Decimal is Decimal);
+            Assert(dyn.Double is double);
+            Assert(dyn.Int is int);
+            Assert(dyn.Long is long);
+            Assert(dyn.Sbyte is sbyte);
+            Assert(dyn.Short is short);
+            Assert(dyn.Single is float);
+            Assert(dyn.String is string);
+            Assert(dyn.Uint is uint);
+            Assert(dyn.Ulong is ulong);
+            Assert(dyn.Ushort is ushort);
+            Assert(dyn.Null is null);
+
+            #endregion
+
+            #region DDictionary instance member checks
+
+            Assert(myDict.KvpTable == typeof(MyDictKVP).FullName);
+            Db.TransactAsync(() => myDict.Add("Test1", "Swoo"));
+            Assert(myDict.TryGetValue("Test1", out var t01) && t01.Equals("Swoo"));
+            var test2kvp = new KeyValuePair<string, object>("Test2", "Goo");
+            Db.TransactAsync(() => myDict.Add(test2kvp));
+            Assert(myDict.TryGetValue("Test2", out var t02) && t02.Equals("Goo"));
+            Assert(myDict.Contains(test2kvp));
+            Assert(myDict.Count == myDict.KeyValuePairs.Count());
+            Assert(myDict.ContainsKey("Test2"));
+            Db.TransactAsync(() => myDict.Remove("Test1"));
+            Assert(!myDict.TryGetValue("Test1", out t01));
+            Db.TransactAsync(() => myDict.Remove("Test1"));
+            Assert(!myDict.TryGetValue("Test1", out t01));
+            Db.TransactAsync(() => myDict.Remove(test2kvp));
+            Assert(!myDict.TryGetValue("Test2", out t01));
+            var arr = new KeyValuePair<string, object>[100];
+            myDict.CopyTo(arr, 0);
+            Assert(arr[0].Key != null);
+            Assert(arr.Count(a => a.Key != null) == myDict.KeyValuePairs.Count());
+
+            MyDict testThingy = null;
+            Db.TransactAsync(() => testThingy = new MyDict {["Test"] = true});
+            Assert(testThingy.Any());
+            Db.TransactAsync(() => testThingy.Clear());
+            Assert(!testThingy.Any());
+            Db.TransactAsync(() => testThingy.Delete());
+
+            object thing = myDict.SafeGet("Swoofooboasd");
+            Assert(thing == null);
+            var otherThing = myDict.SafeGet("Bool");
+            Assert(otherThing is bool);
 
             #endregion
 
@@ -93,16 +153,16 @@ namespace DynamitTester
             var second = Finder<MyDict>.Where(("String", Operator.EQUALS, "A"), ("Byte", Operator.NOT_EQUALS, 122));
             var alsoThird = Finder<MyDict>.Where(("String", Operator.EQUALS, "A")).Where(dict => dict["Byte"] == 122);
 
-            Debug.Assert(all.Count() == 3);
-            Debug.Assert(As.Count() == 2);
+            Assert(all.Count() == 3);
+            Assert(As.Count() == 2);
             bool thirdOk = third.Count() == 1 && third.First()["Id"] == 3;
-            Debug.Assert(thirdOk);
+            Assert(thirdOk);
             var firstAndSecondOk = firstAndSecond.Count() == 2;
-            Debug.Assert(firstAndSecondOk);
+            Assert(firstAndSecondOk);
             bool secondOk = second.Count() == 1 && second.First()["Id"] == 2;
-            Debug.Assert(secondOk);
+            Assert(secondOk);
             bool alsoThirdOk = third.Count() == 1 && third.First()["Id"] == 3;
-            Debug.Assert(alsoThirdOk);
+            Assert(alsoThirdOk);
 
             #endregion
 
@@ -112,38 +172,38 @@ namespace DynamitTester
             {
                 try
                 {
-                    createdDict["T"] = new {A = "ASD"};
+                    myDict["T"] = new {A = "ASD"};
                 }
                 catch (Exception e)
                 {
-                    Debug.Assert(e is InvalidValueTypeException);
+                    Assert(e is InvalidValueTypeException);
                 }
                 try
                 {
-                    createdDict["V"] = new Stopwatch();
+                    myDict["V"] = new Stopwatch();
                 }
                 catch (Exception e)
                 {
-                    Debug.Assert(e is InvalidValueTypeException);
+                    Assert(e is InvalidValueTypeException);
                 }
                 try
                 {
-                    createdDict["X"] = new JObject {["A"] = 123};
+                    myDict["X"] = new JObject {["A"] = 123};
                 }
                 catch (Exception e)
                 {
-                    Debug.Assert(e is InvalidValueTypeException);
+                    Assert(e is InvalidValueTypeException);
                 }
             });
-            Debug.Assert(!createdDict.ContainsKey("T"));
-            Debug.Assert(!createdDict.ContainsKey("V"));
-            Debug.Assert(!createdDict.ContainsKey("X"));
+            Assert(!myDict.ContainsKey("T"));
+            Assert(!myDict.ContainsKey("V"));
+            Assert(!myDict.ContainsKey("X"));
 
             #endregion
 
             #region JSON serialization
 
-            var asJson = JsonConvert.SerializeObject(createdDict);
+            var asJson = JsonConvert.SerializeObject(myDict);
 
             #endregion
 
@@ -151,7 +211,7 @@ namespace DynamitTester
 
             Db.TransactAsync(() =>
             {
-                createdDict.Delete();
+                myDict.Delete();
                 second.First().Delete();
                 third.First().Delete();
             });
@@ -160,9 +220,9 @@ namespace DynamitTester
 
             #region Checking that things don't exist anymore
 
-            Debug.Assert(!Db.SQL<DDictionary>("SELECT t FROM Dynamit.DDictionary t").Any());
-            Debug.Assert(!Db.SQL<DKeyValuePair>("SELECT t FROM Dynamit.DKeyValuePair t").Any());
-            Debug.Assert(!Db.SQL<ValueObject>("SELECT t FROM Dynamit.ValueObjects.ValueObject t").Any());
+            Assert(!Db.SQL<DDictionary>("SELECT t FROM Dynamit.DDictionary t").Any());
+            Assert(!Db.SQL<DKeyValuePair>("SELECT t FROM Dynamit.DKeyValuePair t").Any());
+            Assert(!Db.SQL<ValueObject>("SELECT t FROM Dynamit.ValueObjects.ValueObject t").Any());
 
             #endregion
 

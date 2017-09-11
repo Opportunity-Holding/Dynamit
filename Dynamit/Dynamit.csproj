@@ -83,7 +83,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DDictionary.cs" />
     <Compile Include="DKeyValuePair.cs" />
-    <Compile Include="ValueTypes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dynamit.nuspec" />
