@@ -33,5 +33,17 @@ namespace Dynamit
         {
             return (type?.GetCustomAttributes<TAttribute>().Any()).GetValueOrDefault();
         }
+
+        internal static void CancelConstructor<T, TException>(this T obj, TException exception) where T : class where TException: Exception
+        {
+            try
+            {
+                obj?.Delete();
+            }
+            catch
+            {
+            }
+            throw exception;
+        }
     }
 }

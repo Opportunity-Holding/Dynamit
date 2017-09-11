@@ -37,7 +37,7 @@ namespace Dynamit
             Dicts = typeof(DDictionary).GetConcreteSubclasses();
             var kvpMappings = new Dictionary<string, string>();
             Dicts.ForEach(dict => kvpMappings[dict.FullName ?? throw new Exception()] =
-                dict.GetInterface(typeof(IDDictionary<,>).FullName).GetGenericArguments()[1].FullName);
+                dict.GetInterface(typeof(IDDictionary<,>).FullName)?.GetGenericArguments()[1].FullName);
             KvpMappings = kvpMappings;
         }
 
@@ -53,8 +53,11 @@ namespace Dynamit
             EscapeStrings = enableEscapeStrings;
             var dictsWithMissingInterface = Dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
             if (dictsWithMissingInterface.Any())
-                throw new DDictionaryException(dictsWithMissingInterface.First());
+                throw new MissingIDDictionaryException(dictsWithMissingInterface.First());
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
+            var firstNested = pairs.FirstOrDefault(pair => pair.IsNested);
+            if (firstNested != null)
+                throw new NestedDKeyValuePairDeclarationException(firstNested);
             var lists = typeof(DList).GetConcreteSubclasses();
             var listsWithMissingAttribute = lists.Where(d => d.GetAttribute<DListAttribute>() == null).ToList();
             if (listsWithMissingAttribute.Any())

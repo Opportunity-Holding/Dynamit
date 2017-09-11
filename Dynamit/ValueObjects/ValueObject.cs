@@ -43,7 +43,8 @@ namespace Dynamit.ValueObjects
                 case ulong @ulong: return (new Ulong1 {content = @ulong}.GetObjectNo(), hash);
                 case ushort @ushort: return (new Ushort1 {content = @ushort}.GetObjectNo(), hash);
                 case IDynamicMetaObjectProvider dyn: return Make(GetStaticType(dyn));
-                default: return (null, null);
+                case null: return (null, null);
+                default: throw new InvalidValueTypeException(value.GetType());
             }
         }
 
@@ -94,9 +95,9 @@ namespace Dynamit.ValueObjects
                                 {
                                     Type type = value.GetType();
                                     if (type.FullName == "Newtonsoft.Json.Linq.JObject")
-                                        throw new Exception("Illegal value type for dynamic table: Dynamic tables " +
-                                                            "cannot contain inner objects");
-                                    throw new Exception("Illegal value type for dynamic table: " + type.FullName);
+                                        throw new InvalidValueTypeException(type,
+                                            "Dynamic tables cannot contain inner objects");
+                                    throw new InvalidValueTypeException(type);
                                 }
                             }
                         }

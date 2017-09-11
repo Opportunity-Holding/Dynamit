@@ -31,9 +31,16 @@ namespace Dynamit
 
         protected DKeyValuePair(DDictionary dict, string key, object value = null)
         {
-            Dictionary = dict;
-            Key = key;
-            Value = value;
+            try
+            {
+                Dictionary = dict;
+                Key = key;
+                Value = value;
+            }
+            catch (InvalidValueTypeException e)
+            {
+                this.CancelConstructor(e);
+            }
         }
     }
 }

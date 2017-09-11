@@ -91,7 +91,8 @@ namespace Dynamit
                 if (value is IDynamicMetaObjectProvider)
                     value = ValueObject.GetStaticType(value);
                 Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
-                if (value != null) MakeKeyPair(key, value);
+                if (value == null) return;
+                MakeKeyPair(key, value);
             }
         }
 
@@ -111,7 +112,7 @@ namespace Dynamit
         IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
         protected DDictionary() => KvpTable = DynamitConfig.KvpMappings[GetType().FullName];
-        private void MakeKeyPair(string key, dynamic value) => ((dynamic) this).NewKeyPair((dynamic) this, key, value);
+        private void MakeKeyPair(string k, dynamic v) => ((dynamic) this).NewKeyPair((dynamic) this, k, v);
         private string KSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?";
         private string TSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?";
         public IEnumerable<DKeyValuePair> KeyValuePairs => Db.SQL<DKeyValuePair>(TSQL, this);
