@@ -79,7 +79,7 @@ namespace Dynamit
         /// Implicitly converts a string to a Dynamit.Operator (if string is ("=" | "!=")).
         /// </summary>
         /// <param name="op">The string to convert</param>
-        public static implicit operator Operator(string op) => TryParse(op, out Operator @operator)
+        public static implicit operator Operator(string op) => TryParse(op, out var @operator)
             ? @operator
             : throw new ArgumentException(nameof(op));
 
