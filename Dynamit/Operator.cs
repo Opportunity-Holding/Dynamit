@@ -7,7 +7,7 @@ namespace Dynamit
     public enum Operators
     {
         EQUALS,
-        NOT_EQUALS,
+        NOT_EQUALS
     }
 
     /// <summary>
