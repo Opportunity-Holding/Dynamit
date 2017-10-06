@@ -15,6 +15,7 @@ using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
 namespace Dynamit
 {
+    /// <inheritdoc cref="IDictionary{TKey,TValue}" />
     /// <summary>
     /// A dynamic persistent database type for Starcounter applications
     /// </summary>

@@ -70,7 +70,7 @@ namespace Dynamit
             }
             catch
             {
-                op = default(Operator);
+                op = default;
                 return false;
             }
         }
