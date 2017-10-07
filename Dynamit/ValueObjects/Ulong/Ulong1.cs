@@ -9,5 +9,6 @@ namespace Dynamit.ValueObjects.Ulong
     {
         public ulong content { get; internal set; }
         public override string ToString() => content.ToString();
+        internal override long ByteCount => 24;
     }
 }

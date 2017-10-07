@@ -10,5 +10,6 @@ namespace Dynamit.ValueObjects.Double
     {
         public double content { get; internal set; }
         public override string ToString() => content.ToString(CultureInfo.CurrentCulture);
+        internal override long ByteCount => 24;
     }
 }

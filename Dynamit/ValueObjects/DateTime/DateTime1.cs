@@ -9,5 +9,6 @@ namespace Dynamit.ValueObjects.DateTime
     {
         public System.DateTime content { get; internal set; }
         public override string ToString() => content.ToString("O");
+        internal override long ByteCount => 24;
     }
 }

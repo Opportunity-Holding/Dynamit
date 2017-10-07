@@ -106,7 +106,6 @@ namespace Dynamit
         public bool ContainsKey(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First != null;
         public void Add(string key, object value) => Add(new KVP(key, value));
         public void OnDelete() => Clear();
-        public void Clear() => KeyValuePairs.ForEach(Db.Delete);
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
         public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
         IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
@@ -120,6 +119,11 @@ namespace Dynamit
         private IEnumerable<KVP> _kvPairs => Db.SQL<DKeyValuePair>(TSQL, this).Select(p => new KVP(p.Key, p.Value));
         private object Get(string key) => ContainsKey(key) ? this[key] : null;
         private object Set(string key, object value) => this[key] = value;
+
+        public void Clear()
+        {
+            foreach (var pair in KeyValuePairs) pair.Delete();
+        }
 
         /// <summary>
         /// Gets the value of a key from a DDictionary, or null if the dictionary does not contain the key.

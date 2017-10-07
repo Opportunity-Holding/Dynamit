@@ -48,6 +48,8 @@ namespace Dynamit.ValueObjects
             }
         }
 
+        internal abstract long ByteCount { get; }
+
         internal static object GetStaticType(dynamic value)
         {
             object o;

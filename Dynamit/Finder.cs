@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
 
@@ -43,11 +42,13 @@ namespace Dynamit
             var kvpTable = TableInfo<T>.KvpTable;
             if (equalityConditions?.Any() != true) return All;
             var results = new HashSet<T>();
-            equalityConditions.ForEach((cond, index) =>
+            var index = 0;
+            foreach (var cond in equalityConditions)
             {
                 if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
                 else results.IntersectWith(EqualitySQL(cond, kvpTable));
-            });
+                index += 1;
+            }
             return results;
         }
 
@@ -63,26 +64,14 @@ namespace Dynamit
             var kvpTable = TableInfo<T>.KvpTable;
             if (equalityConditions?.Any() != true) return All.FirstOrDefault();
             var results = new HashSet<T>();
-            equalityConditions.ForEach((cond, index) =>
+            var index = 0;
+            foreach (var cond in equalityConditions)
             {
                 if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
                 else results.IntersectWith(EqualitySQL(cond, kvpTable));
-            });
+                index += 1;
+            }
             return results.FirstOrDefault();
-        }
-    }
-
-    internal static class FinderExtensions
-    {
-        internal static void ForEach<T>(this IEnumerable<T> ienum, Action<T, int> action)
-        {
-            var i = 0;
-            foreach (var e in ienum) action(e, i++);
-        }
-
-        internal static void ForEach<T>(this IEnumerable<T> ienum, Action<T> action)
-        {
-            foreach (var e in ienum) action(e);
         }
     }
 }

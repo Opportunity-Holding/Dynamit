@@ -36,8 +36,9 @@ namespace Dynamit
         {
             Dicts = typeof(DDictionary).GetConcreteSubclasses();
             var kvpMappings = new Dictionary<string, string>();
-            Dicts.ForEach(dict => kvpMappings[dict.FullName ?? throw new Exception()] =
-                dict.GetInterface(typeof(IDDictionary<,>).FullName)?.GetGenericArguments()[1].FullName);
+            foreach (var dict in Dicts)
+                kvpMappings[dict.FullName ?? throw new Exception()] =
+                    dict.GetInterface(typeof(IDDictionary<,>).FullName)?.GetGenericArguments()[1].FullName;
             KvpMappings = kvpMappings;
         }
 

@@ -10,5 +10,6 @@ namespace Dynamit.ValueObjects.Decimal
     {
         public decimal content { get; internal set; }
         public override string ToString() => content.ToString(CultureInfo.CurrentCulture);
+        internal override long ByteCount => 20;
     }
 }

@@ -103,11 +103,15 @@ namespace Dynamit
         protected abstract DElement NewElement(DList list, int index, object value = null);
         public IEnumerable<DElement> Elements => Db.SQL<DElement>(LSQL, this);
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public void Clear() => Elements.ForEach(Db.Delete);
         public bool Contains(object item) => Db.SQL<DElement>(VSQL, this, item?.GetHashCode()).First != null;
         public IEnumerator<object> GetEnumerator() => Elements.GetEnumerator();
         public int Count => HighestIndex + 1;
         public bool IsReadOnly { get; set; }
-        public void OnDelete() => Elements.ForEach(Db.Delete);
+        public void OnDelete() => Clear();
+
+        public void Clear()
+        {
+            foreach (var element in Elements) element.Delete();
+        }
     }
 }

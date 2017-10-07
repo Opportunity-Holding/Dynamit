@@ -8,5 +8,6 @@ namespace Dynamit.ValueObjects.Byte
     {
         public byte content { get; internal set; }
         public override string ToString() => content.ToString();
+        internal override long ByteCount => 17;
     }
 }

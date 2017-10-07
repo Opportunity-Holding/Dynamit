@@ -1,4 +1,5 @@
-﻿using Dynamit.ValueObjects;
+﻿using System.Text;
+using Dynamit.ValueObjects;
 using Starcounter;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
@@ -18,6 +19,7 @@ namespace Dynamit
         public ulong? ValueObjectNo;
         public void OnDelete() => ((object) GetValueObject())?.Delete();
         public static implicit operator KVP(DKeyValuePair pair) => new KVP(pair.Key, pair.Value);
+        public long ByteCount => Encoding.UTF8.GetByteCount(Key) + (GetValueObject()?.ByteCount ?? 0) + 16;
 
         public dynamic Value
         {
@@ -28,7 +30,7 @@ namespace Dynamit
                 (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
             }
         }
-
+        
         protected DKeyValuePair(DDictionary dict, string key, object value = null)
         {
             try

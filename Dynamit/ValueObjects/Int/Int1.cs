@@ -9,5 +9,6 @@ namespace Dynamit.ValueObjects.Int
     {
         public int content { get; internal set; }
         public override string ToString() => content.ToString();
+        internal override long ByteCount => 20;
     }
 }

@@ -45,5 +45,14 @@ namespace Dynamit
             }
             throw exception;
         }
+
+        internal static bool IsNullable(this Type type, out Type baseType)
+        {
+            baseType = null;
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>))
+                return false;
+            baseType = type.GenericTypeArguments[0];
+            return true;
+        }
     }
 }
