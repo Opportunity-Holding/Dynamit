@@ -30,7 +30,7 @@ namespace Dynamit
                 (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
             }
         }
-        
+
         protected DKeyValuePair(DDictionary dict, string key, object value = null)
         {
             try
