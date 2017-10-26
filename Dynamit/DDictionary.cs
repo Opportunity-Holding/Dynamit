@@ -141,7 +141,8 @@ namespace Dynamit
                 expression: Call
                 (
                     instance: Convert(Expression, LimitType),
-                    method: typeof(DDictionary).GetMethod(nameof(Get), Instance | NonPublic),
+                    method: typeof(DDictionary).GetMethod(nameof(Get), Instance | NonPublic)
+                            ?? throw new Exception("Error when binding get method"),
                     arguments: Constant(binder.Name)
                 ),
                 restrictions: GetTypeRestriction(Expression, LimitType)
@@ -153,7 +154,8 @@ namespace Dynamit
                     expression: Call
                     (
                         instance: Convert(Expression, LimitType),
-                        method: typeof(DDictionary).GetMethod(nameof(Set), Instance | NonPublic),
+                        method: typeof(DDictionary).GetMethod(nameof(Set), Instance | NonPublic)
+                                ?? throw new Exception("Error when binding set method"),
                         arg0: Constant(binder.Name),
                         arg1: Convert(value.Expression, typeof(object))
                     ),
