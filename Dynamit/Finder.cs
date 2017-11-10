@@ -10,7 +10,7 @@ namespace Dynamit
     /// <typeparam name="T"></typeparam>
     public static class Finder<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
     {
-        private static QueryResultRows<T> EqualitySQL((string key, Operator op, object value) cond, string kvp)
+        private static IEnumerable<T> EqualitySQL((string key, Operator op, object value) cond, string kvp)
         {
             var SQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
                       $"FROM {kvp} t WHERE t.Key =? AND t.ValueHash {cond.op.SQL}?";
@@ -20,7 +20,7 @@ namespace Dynamit
         /// <summary>
         /// Returns all entities of the given type
         /// </summary>
-        public static QueryResultRows<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
+        public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 

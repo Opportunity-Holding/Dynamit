@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Starcounter;
 
 #pragma warning disable 1591
@@ -43,7 +44,7 @@ namespace Dynamit
         {
             try
             {
-                var obj = Db.SQL<DElement>(VSQL, this, item?.GetHashCode()).First;
+                var obj = Db.SQL<DElement>(VSQL, this, item?.GetHashCode()).FirstOrDefault();
                 if (obj == null) return true;
                 var index = obj.Index;
                 obj.Delete();
@@ -59,7 +60,7 @@ namespace Dynamit
         public int IndexOf(object item)
         {
             if (item == null) return -1;
-            var obj = Db.SQL<DElement>(VSQL, this, item.GetHashCode()).First;
+            var obj = Db.SQL<DElement>(VSQL, this, item.GetHashCode()).FirstOrDefault();
             return obj?.Index ?? -1;
         }
 
@@ -76,13 +77,13 @@ namespace Dynamit
         {
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
-            Db.SQL<DElement>(ISQL, this, index).First?.Delete();
+            Db.SQL<DElement>(ISQL, this, index).FirstOrDefault()?.Delete();
             SetIndexes(index + 1, -1);
         }
 
         public object this[int index]
         {
-            get => Db.SQL<DElement>(ISQL, this, index).First;
+            get => Db.SQL<DElement>(ISQL, this, index).FirstOrDefault();
             set => Insert(index, value);
         }
 
@@ -91,7 +92,7 @@ namespace Dynamit
             DElement last = null;
             for (var i = fromIndex; i < Count; i += 1)
             {
-                last = Db.SQL<DElement>(ISQL, this, i).First;
+                last = Db.SQL<DElement>(ISQL, this, i).First();
                 last.Index += incrementor;
             }
             HighestIndex = last?.Index ?? fromIndex;
@@ -103,7 +104,7 @@ namespace Dynamit
         protected abstract DElement NewElement(DList list, int index, object value = null);
         public IEnumerable<DElement> Elements => Db.SQL<DElement>(LSQL, this);
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        public bool Contains(object item) => Db.SQL<DElement>(VSQL, this, item?.GetHashCode()).First != null;
+        public bool Contains(object item) => Db.SQL<DElement>(VSQL, this, item?.GetHashCode()).FirstOrDefault() != null;
         public IEnumerator<object> GetEnumerator() => Elements.GetEnumerator();
         public int Count => HighestIndex + 1;
         public bool IsReadOnly { get; set; }

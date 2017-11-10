@@ -86,7 +86,7 @@ namespace Dynamit
         {
             if (table == null) throw new ArgumentNullException(nameof(table));
             var indexName = $"DYNAMIT_GENERATED_INDEX_FOR_{table.FullName?.Replace('.', '_')}__{string.Join("_", c)}";
-            if (Db.SQL("SELECT i FROM Starcounter.Metadata.\"Index\" i WHERE Name =?", indexName).First == null)
+            if (Db.SQL("SELECT i FROM Starcounter.Metadata.\"Index\" i WHERE Name =?", indexName).FirstOrDefault() == null)
                 Db.SQL($"CREATE INDEX {indexName} ON {table.FullName} ({string.Join(",", c.Select(Fnuttify))})");
         }
     }

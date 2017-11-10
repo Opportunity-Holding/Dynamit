@@ -59,7 +59,7 @@ namespace Dynamit
                 throw new ArgumentNullException(nameof(key));
             try
             {
-                var obj = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
+                var obj = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
                 obj?.Delete();
                 return true;
             }
@@ -72,7 +72,7 @@ namespace Dynamit
         public bool TryGetValue(string key, out object value)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
-            var match = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
+            var match = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
             value = match?.Value;
             return match != null;
         }
@@ -82,7 +82,7 @@ namespace Dynamit
             get
             {
                 if (key == null) throw new ArgumentNullException(nameof(key));
-                var match = Db.SQL<DKeyValuePair>(KSQL, this, key).First;
+                var match = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
                 if (match == null) throw new KeyNotFoundException();
                 return match.Value;
             }
@@ -91,7 +91,7 @@ namespace Dynamit
                 if (key == null) throw new ArgumentNullException(nameof(key));
                 if (value is IDynamicMetaObjectProvider)
                     value = ValueObject.GetStaticType(value);
-                Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Delete();
+                Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault()?.Delete();
                 if (value == null) return;
                 MakeKeyPair(key, value);
             }
@@ -103,7 +103,7 @@ namespace Dynamit
         public bool Remove(KVP item) => Remove(item.Key);
         public int Count => KeyValuePairs.Count();
         public bool IsReadOnly => false;
-        public bool ContainsKey(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First != null;
+        public bool ContainsKey(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault() != null;
         public void Add(string key, object value) => Add(new KVP(key, value));
         public void OnDelete() => Clear();
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
@@ -128,13 +128,11 @@ namespace Dynamit
         /// <summary>
         /// Gets the value of a key from a DDictionary, or null if the dictionary does not contain the key.
         /// </summary>
-        public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).First?.Value;
+        public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault()?.Value;
 
         private class DMetaObject : DynamicMetaObject
         {
-            internal DMetaObject(Expression e, DDictionary d) : base(e, BindingRestrictions.Empty, d)
-            {
-            }
+            internal DMetaObject(Expression e, DDictionary d) : base(e, BindingRestrictions.Empty, d) { }
 
             public override DynamicMetaObject BindGetMember(GetMemberBinder binder) => new DynamicMetaObject
             (
