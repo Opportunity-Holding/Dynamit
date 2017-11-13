@@ -34,15 +34,14 @@ namespace Dynamit
             return (type?.GetCustomAttributes<TAttribute>().Any()).GetValueOrDefault();
         }
 
-        internal static void CancelConstructor<T, TException>(this T obj, TException exception) where T : class where TException: Exception
+        internal static void CancelConstructor<T, TException>(this T obj, TException exception)
+            where T : class where TException : Exception
         {
             try
             {
                 obj?.Delete();
             }
-            catch
-            {
-            }
+            catch { }
             throw exception;
         }
 
@@ -53,6 +52,16 @@ namespace Dynamit
                 return false;
             baseType = type.GenericTypeArguments[0];
             return true;
+        }
+
+        internal static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action)
+        {
+            var i = 0;
+            foreach (var e in source)
+            {
+                action(e, i);
+                i += 1;
+            }
         }
     }
 }

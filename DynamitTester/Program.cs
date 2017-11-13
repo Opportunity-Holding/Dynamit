@@ -59,7 +59,8 @@ namespace DynamitTester
                     ["Id"] = 2,
                     ["Byte"] = (byte) 12,
                     ["String"] = "A",
-                    ["Bool"] = true
+                    ["Bool"] = true,
+                    ["Goo"] = 123
                 };
 
                 new MyDict
@@ -153,6 +154,16 @@ namespace DynamitTester
             var second = Finder<MyDict>.Where(("String", Operator.EQUALS, "A"), ("Byte", Operator.NOT_EQUALS, 122));
             var alsoThird = Finder<MyDict>.Where(("String", Operator.EQUALS, "A")).Where(dict => dict["Byte"] == 122);
 
+            var firstAndThird = Finder<MyDict>.Where("Goo", Operator.EQUALS, null);
+            var alsoSecond = Finder<MyDict>.Where("Goo", Operator.NOT_EQUALS, null);
+
+            var alsoAll1 = Finder<MyDict>.Where();
+            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.NOT_EQUALS, null));
+            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.NOT_EQUALS, null), null, null);
+            Assert(alsoAll1.Count() == 3);
+            Assert(alsoAll2.Count() == 3);
+            Assert(alsoAll3.Count() == 3);
+
             Assert(all.Count() == 3);
             Assert(As.Count() == 2);
             bool thirdOk = third.Count() == 1 && third.First()["Id"] == 3;
@@ -163,6 +174,10 @@ namespace DynamitTester
             Assert(secondOk);
             bool alsoThirdOk = third.Count() == 1 && third.First()["Id"] == 3;
             Assert(alsoThirdOk);
+
+            Assert(firstAndThird.Count() == 2);
+            bool alsoSecondOk = alsoSecond.Count() == 1 && alsoSecond.First()["Id"] == 2;
+            Assert(alsoSecondOk);
 
             #endregion
 
@@ -232,6 +247,7 @@ namespace DynamitTester
         }
     }
 
+
     public class MyDict : DDictionary, IDDictionary<MyDict, MyDictKVP>
     {
         public MyDictKVP NewKeyPair(MyDict dict, string key, object value = null)
@@ -242,8 +258,6 @@ namespace DynamitTester
 
     public class MyDictKVP : DKeyValuePair
     {
-        public MyDictKVP(DDictionary dict, string key, object value = null) : base(dict, key, value)
-        {
-        }
+        public MyDictKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
 }

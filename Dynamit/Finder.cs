@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
+using static Dynamit.Operators;
 
 namespace Dynamit
 {
@@ -10,13 +12,6 @@ namespace Dynamit
     /// <typeparam name="T"></typeparam>
     public static class Finder<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
     {
-        private static IEnumerable<T> EqualitySQL((string key, Operator op, object value) cond, string kvp)
-        {
-            var SQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
-                      $"FROM {kvp} t WHERE t.Key =? AND t.ValueHash {cond.op.SQL}?";
-            return Db.SQL<T>(SQL, cond.key, cond.value.GetHashCode());
-        }
-
         /// <summary>
         /// Returns all entities of the given type
         /// </summary>
@@ -25,53 +20,62 @@ namespace Dynamit
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public static IEnumerable<T> Where(string key, Operator op, dynamic value) =>
-            EqualitySQL((key, op, value), TableInfo<T>.KvpTable);
-
-        /// <summary>
-        /// Returns all DDictionaries of the given derived type for which ALL of the
-        /// provided equality conditions are true. If no conditions are given, returns all entities found. 
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="equalityConditions"></param>
-        /// <returns></returns>
-        public static IEnumerable<T> Where(params (string key, Operator op, dynamic value)[] equalityConditions)
-        {
-            var kvpTable = TableInfo<T>.KvpTable;
-            if (equalityConditions?.Any() != true) return All;
-            var results = new HashSet<T>();
-            var index = 0;
-            foreach (var cond in equalityConditions)
-            {
-                if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
-                else results.IntersectWith(EqualitySQL(cond, kvpTable));
-                index += 1;
-            }
-            return results;
-        }
+        public static IEnumerable<T> Where(string key, Operator op, dynamic value) => Where((key, op, value));
 
         /// <summary>
         /// Returns the first DDictionary of the given derived type for which ALL of the
         /// provided equality conditions are true. If no conditions are given, returns the
         /// first entity found. If no entity is found, returns null.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="equalityConditions"></param>
-        public static T First(params (string key, Operator op, dynamic value)[] equalityConditions)
+        public static T First(params (string key, Operator op, dynamic value)?[] equalityConditions) =>
+            Where(equalityConditions)?.FirstOrDefault();
+
+        private static readonly string selectSql = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
+                                                   $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
+
+        private static readonly string countSql = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable} t WHERE t.Key =?";
+
+        /// <summary>
+        /// Returns all DDictionaries of the given derived type for which ALL of the
+        /// provided equality conditions are true. If no conditions are given, returns all entities found. 
+        /// </summary>
+        public static IEnumerable<T> Where(params (string key, Operator op, dynamic value)?[] equalityConditions)
         {
-            var kvpTable = TableInfo<T>.KvpTable;
-            if (equalityConditions?.Any() != true) return All.FirstOrDefault();
-            var results = new HashSet<T>();
-            var index = 0;
-            foreach (var cond in equalityConditions)
+            if (equalityConditions?.Any(c => c != null) != true) return All;
+            var sqlStub = selectSql;
+            var equalsNulls = new List<(string key, Operator op, dynamic value)>();
+            for (var i = 0; i < equalityConditions.Length; i += 1)
             {
-                if (index == 0) results.UnionWith(EqualitySQL(cond, kvpTable));
-                else results.IntersectWith(EqualitySQL(cond, kvpTable));
-                index += 1;
+                var cond = equalityConditions[i];
+                if (cond != null && (cond.Value.op == EQUALS && cond.Value.value == null))
+                {
+                    equalsNulls.Add(cond.Value);
+                    equalityConditions[i] = null;
+                }
             }
-            return results.FirstOrDefault();
+
+            IEnumerable<T> evaluate((string key, Operator op, dynamic value)? cond)
+            {
+                if (!cond.HasValue) throw new Exception("Invalid Finder condition. Cannot be null");
+                var _cond = cond.Value;
+                if (_cond.value == null) return Db.SQL<T>($"{sqlStub} IS NOT NULL", _cond.key);
+                return Db.SQL<T>($"{sqlStub} {_cond.op.SQL}?", _cond.key, _cond.value.GetHashCode());
+            }
+
+            var results = new HashSet<T>();
+            equalityConditions.Where(cond => cond != null).ForEach((cond, i) =>
+            {
+                if (i == 0) results.UnionWith(evaluate(cond));
+                else results.IntersectWith(evaluate(cond));
+            });
+            if (!results.Any()) results.UnionWith(All);
+            foreach (var cond in equalsNulls)
+            {
+                var initialCount = Db.SQL<long>(countSql, cond.key).FirstOrDefault();
+                if (initialCount > 0)
+                    results.ExceptWith(Db.SQL<T>($"{sqlStub} IS NOT NULL", cond.key));
+            }
+            return results;
         }
     }
 }
