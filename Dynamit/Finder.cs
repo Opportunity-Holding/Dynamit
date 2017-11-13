@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
-using static Dynamit.Operators;
+using static Dynamit.Operator;
 
 namespace Dynamit
 {
@@ -10,7 +10,7 @@ namespace Dynamit
     /// Provides get methods for DDictionary types
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public static class Finder<T> where T : DDictionary, IDDictionary<T, DKeyValuePair>
+    public static class Finder<T> where T : DDictionary
     {
         /// <summary>
         /// Returns all entities of the given type
@@ -54,12 +54,23 @@ namespace Dynamit
                 }
             }
 
+            string getSql(Operator op)
+            {
+                switch (op)
+                {
+                    case nil: throw new Exception("Invalid operator in Finder condition, cannot be nil");
+                    case EQUALS: return "=";
+                    case NOT_EQUALS: return "<>";
+                    default: return null;
+                }
+            }
+
             IEnumerable<T> evaluate((string key, Operator op, dynamic value)? cond)
             {
                 if (!cond.HasValue) throw new Exception("Invalid Finder condition. Cannot be null");
                 var _cond = cond.Value;
                 if (_cond.value == null) return Db.SQL<T>($"{sqlStub} IS NOT NULL", _cond.key);
-                return Db.SQL<T>($"{sqlStub} {_cond.op.SQL}?", _cond.key, _cond.value.GetHashCode());
+                return Db.SQL<T>($"{sqlStub} {getSql(_cond.op)}?", _cond.key, _cond.value.GetHashCode());
             }
 
             var results = new HashSet<T>();

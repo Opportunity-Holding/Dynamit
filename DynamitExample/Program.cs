@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dynamit;
 using Starcounter;
-using static Dynamit.Operators;
+using static Dynamit.Operator;
 
 // ReSharper disable All
 
@@ -61,7 +61,7 @@ namespace DynamitExample
             //    .Where(new Conditions {["Group", EQUALS] = "A1"})
             //    .Where(da => da.SafeGet("Price") > 3);
 
-            var prod = Finder<Product>.First(("Product_ID", "=", 42), ("Price", "=", 3.25));
+            var prod = Finder<Product>.First(("Product_ID", EQUALS, 42), ("Price", EQUALS, 3.25));
 
             var c = prod["Product_ID"];
 
@@ -94,9 +94,7 @@ namespace DynamitExample
 
     public class DynamicProductKVP : DKeyValuePair
     {
-        public DynamicProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value)
-        {
-        }
+        public DynamicProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
 
     public class Product : DDictionary, IDDictionary<Product, ProductKVP>
@@ -109,9 +107,7 @@ namespace DynamitExample
 
     public class ProductKVP : DKeyValuePair
     {
-        public ProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value)
-        {
-        }
+        public ProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
 
     [DList(typeof(DynamicListElement))]
@@ -125,9 +121,7 @@ namespace DynamitExample
 
     public class DynamicListElement : DElement
     {
-        public DynamicListElement(DList list, int index, object value = null) : base(list, index, value)
-        {
-        }
+        public DynamicListElement(DList list, int index, object value = null) : base(list, index, value) { }
     }
 
 
