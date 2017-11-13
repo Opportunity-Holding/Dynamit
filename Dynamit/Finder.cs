@@ -18,11 +18,6 @@ namespace Dynamit
         public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
         /// <summary>
-        /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 
-        /// </summary>
-        public static IEnumerable<T> Where(string key, Operator op, dynamic value) => Where((key, op, value));
-
-        /// <summary>
         /// Returns the first DDictionary of the given derived type for which ALL of the
         /// provided equality conditions are true. If no conditions are given, returns the
         /// first entity found. If no entity is found, returns null.
@@ -34,6 +29,11 @@ namespace Dynamit
                                                    $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
 
         private static readonly string countSql = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable} t WHERE t.Key =?";
+
+        /// <summary>
+        /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 
+        /// </summary>
+        public static IEnumerable<T> Where(string key, Operator op, dynamic value) => Where((key, op, value));
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which ALL of the
@@ -74,12 +74,17 @@ namespace Dynamit
             }
 
             var results = new HashSet<T>();
+            var evaluated = false;
             equalityConditions.Where(cond => cond != null).ForEach((cond, i) =>
             {
-                if (i == 0) results.UnionWith(evaluate(cond));
+                if (i == 0)
+                {
+                    results.UnionWith(evaluate(cond));
+                    evaluated = true;
+                }
                 else results.IntersectWith(evaluate(cond));
             });
-            if (!results.Any()) results.UnionWith(All);
+            if (!evaluated) results.UnionWith(All);
             foreach (var cond in equalsNulls)
             {
                 var initialCount = Db.SQL<long>(countSql, cond.key).FirstOrDefault();
