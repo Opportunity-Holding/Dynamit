@@ -3,12 +3,12 @@
 <package>
   <metadata>
     <id>Dynamit</id>
-    <version>0.1.22</version>
+    <version>0.1.23</version>
     <title>Dynamit</title>
     <authors>Erik von Krusenstierna</authors>
     <owners>Mopedo AB</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Dynamic table definitions for Starcounter. Spec: https://goo.gl/q4u6EY</description>
+    <description>Dynamic table definitions for Starcounter. Spec: https://goo.gl/q4u6EY . For Starcounter 2.3.1.7742 or later</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2017 Mopedo AB. All rights reserved.</copyright>
     <tags>mopedo starcounter dynamic table ddictionary dynamit</tags>
