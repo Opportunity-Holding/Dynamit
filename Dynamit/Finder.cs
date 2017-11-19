@@ -17,14 +17,6 @@ namespace Dynamit
         /// </summary>
         public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
 
-        /// <summary>
-        /// Returns the first DDictionary of the given derived type for which ALL of the
-        /// provided equality conditions are true. If no conditions are given, returns the
-        /// first entity found. If no entity is found, returns null.
-        /// </summary>
-        public static T First(params (string key, Operator op, dynamic value)?[] equalityConditions) =>
-            Where(equalityConditions)?.FirstOrDefault();
-
         private static readonly string selectSql = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
                                                    $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
 
@@ -93,5 +85,13 @@ namespace Dynamit
             }
             return results;
         }
+
+        /// <summary>
+        /// Returns the first DDictionary of the given derived type for which ALL of the
+        /// provided equality conditions are true. If no conditions are given, returns the
+        /// first entity found. If no entity is found, returns null.
+        /// </summary>
+        public static T First(params (string key, Operator op, dynamic value)?[] equalityConditions) =>
+            Where(equalityConditions)?.FirstOrDefault();
     }
 }
