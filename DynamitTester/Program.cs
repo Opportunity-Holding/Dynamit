@@ -157,9 +157,11 @@ namespace DynamitTester
             var firstAndThird = Finder<MyDict>.Where("Goo", Operator.EQUALS, null);
             var alsoSecond = Finder<MyDict>.Where("Goo", Operator.NOT_EQUALS, null);
 
+            var json = JsonConvert.SerializeObject(all);
+
             var alsoAll1 = Finder<MyDict>.Where();
-            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.NOT_EQUALS, null));
-            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.NOT_EQUALS, null), null, null);
+            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.EQUALS, null));
+            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.EQUALS, null), null, null);
             Assert(alsoAll1.Count() == 3);
             Assert(alsoAll2.Count() == 3);
             Assert(alsoAll3.Count() == 3);

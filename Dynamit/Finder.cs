@@ -77,11 +77,11 @@ namespace Dynamit
                 else results.IntersectWith(evaluate(cond));
             });
             if (!evaluated) results.UnionWith(All);
-            foreach (var cond in equalsNulls)
+            foreach (var (key, _, _) in equalsNulls)
             {
-                var initialCount = Db.SQL<long>(countSql, cond.key).FirstOrDefault();
+                var initialCount = Db.SQL<long>(countSql, key).FirstOrDefault();
                 if (initialCount > 0)
-                    results.ExceptWith(Db.SQL<T>($"{sqlStub} IS NOT NULL", cond.key));
+                    results.ExceptWith(Db.SQL<T>($"{sqlStub} IS NOT NULL", key));
             }
             return results;
         }
