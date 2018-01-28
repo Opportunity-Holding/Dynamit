@@ -8,7 +8,7 @@
     <authors>Erik von Krusenstierna</authors>
     <owners>Mopedo AB</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Dynamic table definitions for Starcounter. Spec: https://goo.gl/q4u6EY . For Starcounter 2.3.2.90 or later</description>
+    <description>Dynamic table definitions for Starcounter. Spec: https://goo.gl/q4u6EY . For Starcounter 2.3.2.157 or later</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2017 Mopedo AB. All rights reserved.</copyright>
     <tags>mopedo starcounter dynamic table ddictionary dynamit</tags>
