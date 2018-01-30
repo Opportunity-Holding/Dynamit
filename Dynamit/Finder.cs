@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
+using static System.StringComparison;
 using static Dynamit.Operator;
 
 namespace Dynamit
@@ -60,9 +61,38 @@ namespace Dynamit
             IEnumerable<T> evaluate((string key, Operator op, dynamic value)? cond)
             {
                 if (!cond.HasValue) throw new Exception("Invalid Finder condition. Cannot be null");
-                var _cond = cond.Value;
-                if (_cond.value == null) return Db.SQL<T>($"{sqlStub} IS NOT NULL", _cond.key);
-                return Db.SQL<T>($"{sqlStub} {getSql(_cond.op)}?", _cond.key, _cond.value.GetHashCode());
+                var (key, op, value) = cond.Value;
+                if (op == EQUALS)
+                {
+                    if (string.Equals("objectno", key, OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var objectNo = (ulong) value;
+                            var result = Db.FromId<T>(objectNo);
+                            return result == null ? new T[0] : new[] {result};
+                        }
+                        catch
+                        {
+                            throw new Exception($"Invalid ObjectNo format. Should be positive integer, found {value ?? "null"}");
+                        }
+                    }
+                    if (string.Equals("objectid", key, OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            var objectID = (string) value;
+                            var result = Db.FromId<T>(objectID);
+                            return result == null ? new T[0] : new[] {result};
+                        }
+                        catch
+                        {
+                            throw new Exception($"Invalid ObjectID format. Should be base64 string, found {value}");
+                        }
+                    }
+                }
+                if (value == null) return Db.SQL<T>($"{sqlStub} IS NOT NULL", key);
+                return Db.SQL<T>($"{sqlStub} {getSql(op)}?", key, value.GetHashCode());
             }
 
             var results = new HashSet<T>();

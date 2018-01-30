@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Starcounter;
 using static System.Diagnostics.Debug;
+using static Dynamit.Operator;
 
 // ReSharper disable All
 
@@ -148,20 +149,26 @@ namespace DynamitTester
             #region Finder
 
             var all = Finder<MyDict>.All;
-            var As = Finder<MyDict>.Where("String", Operator.EQUALS, "A");
-            var third = Finder<MyDict>.Where("Id", Operator.EQUALS, 3);
+            var As = Finder<MyDict>.Where("String", EQUALS, "A");
+            var third = Finder<MyDict>.Where("Id", EQUALS, 3);
             var firstAndSecond = Finder<MyDict>.All.Where(dict => dict["Id"] < 3);
-            var second = Finder<MyDict>.Where(("String", Operator.EQUALS, "A"), ("Byte", Operator.NOT_EQUALS, 122));
-            var alsoThird = Finder<MyDict>.Where(("String", Operator.EQUALS, "A")).Where(dict => dict["Byte"] == 122);
+            var second = Finder<MyDict>.Where(("String", EQUALS, "A"), ("Byte", NOT_EQUALS, 122));
+            var alsoThird = Finder<MyDict>.Where(("String", EQUALS, "A")).Where(dict => dict["Byte"] == 122);
 
-            var firstAndThird = Finder<MyDict>.Where("Goo", Operator.EQUALS, null);
-            var alsoSecond = Finder<MyDict>.Where("Goo", Operator.NOT_EQUALS, null);
+            var objectNo = myDict.GetObjectNo();
+            var objectId = myDict.GetObjectID();
+            var _first = Finder<MyDict>.Where("ObjectID", EQUALS, objectId).FirstOrDefault();
+            var _first2 = Finder<MyDict>.Where("ObjectNo", EQUALS, objectNo).FirstOrDefault();
+            Assert(_first.Equals(_first2) && _first.Equals(myDict));
+
+            var firstAndThird = Finder<MyDict>.Where("Goo", EQUALS, null);
+            var alsoSecond = Finder<MyDict>.Where("Goo", NOT_EQUALS, null);
 
             var json = JsonConvert.SerializeObject(all);
 
             var alsoAll1 = Finder<MyDict>.Where();
-            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.EQUALS, null));
-            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", Operator.EQUALS, null), null, null);
+            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", EQUALS, null));
+            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", EQUALS, null), null, null);
             Assert(alsoAll1.Count() == 3);
             Assert(alsoAll2.Count() == 3);
             Assert(alsoAll3.Count() == 3);
