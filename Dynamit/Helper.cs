@@ -54,6 +54,12 @@ namespace Dynamit
             return true;
         }
 
+        internal static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
+        {
+            foreach (var e in source)
+                action(e);
+        }
+
         internal static void ForEach<T>(this IEnumerable<T> source, Action<T, int> action)
         {
             var i = 0;

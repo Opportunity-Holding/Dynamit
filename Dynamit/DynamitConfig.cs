@@ -80,7 +80,7 @@ namespace Dynamit
             }
         }
 
-        private static string Fnuttify(this string sqlKey) => $"\"{sqlKey.Replace(".", "\".\"")}\"";
+        internal static string Fnuttify(this string sqlKey) => $"\"{sqlKey.Replace(".", "\".\"")}\"";
 
         private static void CreateIndex(Type table, params string[] c)
         {

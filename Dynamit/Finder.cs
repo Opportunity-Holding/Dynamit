@@ -16,12 +16,14 @@ namespace Dynamit
         /// <summary>
         /// Returns all entities of the given type
         /// </summary>
-        public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName} t");
+        public static IEnumerable<T> All => Db.SQL<T>($"SELECT t FROM {typeof(T).FullName.Fnuttify()} t");
 
-        private static readonly string selectSql = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName}) " +
-                                                   $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
+        private static readonly string StaticSQL = $"SELECT t FROM {typeof(T).FullName.Fnuttify()} t WHERE ";
 
-        private static readonly string countSql = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable} t WHERE t.Key =?";
+        private static readonly string KVPSQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
+                                                $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
+
+        private static readonly string CountSQL = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable.Fnuttify()} t WHERE t.Key =?";
 
         /// <summary>
         /// Returns all DDictionaries of the given derived type for which the provided equality condition is true. 
@@ -35,12 +37,14 @@ namespace Dynamit
         public static IEnumerable<T> Where(params (string key, Operator op, dynamic value)?[] equalityConditions)
         {
             if (equalityConditions?.Any(c => c != null) != true) return All;
-            var sqlStub = selectSql;
             var equalsNulls = new List<(string key, Operator op, dynamic value)>();
             for (var i = 0; i < equalityConditions.Length; i += 1)
             {
                 var cond = equalityConditions[i];
-                if (cond != null && (cond.Value.op == EQUALS && cond.Value.value == null))
+                if (cond == null) break;
+                if (string.IsNullOrWhiteSpace(cond.Value.key))
+                    throw new Exception("Invalid Finder condition. Key cannot be null or empty");
+                if (cond.Value.key[0] != '$' && cond.Value.op == EQUALS && cond.Value.value == null)
                 {
                     equalsNulls.Add(cond.Value);
                     equalityConditions[i] = null;
@@ -51,10 +55,9 @@ namespace Dynamit
             {
                 switch (op)
                 {
-                    case nil: throw new Exception("Invalid operator in Finder condition, cannot be nil");
                     case EQUALS: return "=";
                     case NOT_EQUALS: return "<>";
-                    default: return null;
+                    default: throw new Exception($"Invalid operator in Finder condition. Expected 'EQUALS' or 'NOT_EQUALS', found '{op}'");
                 }
             }
 
@@ -62,56 +65,64 @@ namespace Dynamit
             {
                 if (!cond.HasValue) throw new Exception("Invalid Finder condition. Cannot be null");
                 var (key, op, value) = cond.Value;
-                if (op == EQUALS)
+                if (key[0] == '$' && key.Length > 1)
                 {
-                    if (string.Equals("objectno", key, OrdinalIgnoreCase))
+                    key = key.Substring(1);
+                    if (op == EQUALS)
                     {
-                        try
+                        if (string.Equals("objectno", key, OrdinalIgnoreCase))
                         {
-                            var objectNo = (ulong) value;
-                            var result = Db.FromId<T>(objectNo);
-                            return result == null ? new T[0] : new[] {result};
+                            try
+                            {
+                                var objectNo = (ulong) value;
+                                var result = Db.FromId<T>(objectNo);
+                                return result == null ? new T[0] : new[] {result};
+                            }
+                            catch
+                            {
+                                throw new Exception($"Invalid ObjectNo format. Should be positive integer, found {value ?? "null"}");
+                            }
                         }
-                        catch
+                        if (string.Equals("objectid", key, OrdinalIgnoreCase))
                         {
-                            throw new Exception($"Invalid ObjectNo format. Should be positive integer, found {value ?? "null"}");
+                            try
+                            {
+                                var objectID = (string) value;
+                                var result = Db.FromId<T>(objectID);
+                                return result == null ? new T[0] : new[] {result};
+                            }
+                            catch
+                            {
+                                throw new Exception($"Invalid ObjectID format. Should be base64 string, found {value}");
+                            }
                         }
                     }
-                    if (string.Equals("objectid", key, OrdinalIgnoreCase))
-                    {
-                        try
-                        {
-                            var objectID = (string) value;
-                            var result = Db.FromId<T>(objectID);
-                            return result == null ? new T[0] : new[] {result};
-                        }
-                        catch
-                        {
-                            throw new Exception($"Invalid ObjectID format. Should be base64 string, found {value}");
-                        }
-                    }
+                    if (value == null) return Db.SQL<T>($"{StaticSQL} t.{key} IS NOT NULL", key);
                 }
-                if (value == null) return Db.SQL<T>($"{sqlStub} IS NOT NULL", key);
-                return Db.SQL<T>($"{sqlStub} {getSql(op)}?", key, value.GetHashCode());
+
+                if (value == null) return Db.SQL<T>($"{KVPSQL} IS NOT NULL", key);
+                return Db.SQL<T>($"{KVPSQL} {getSql(op)}?", key, value.GetHashCode());
             }
 
             var results = new HashSet<T>();
             var evaluated = false;
-            equalityConditions.Where(cond => cond != null).ForEach((cond, i) =>
+            var first = true;
+            equalityConditions.Where(cond => cond != null).ForEach(cond =>
             {
-                if (i == 0)
+                if (first)
                 {
                     results.UnionWith(evaluate(cond));
                     evaluated = true;
+                    first = false;
                 }
                 else results.IntersectWith(evaluate(cond));
             });
             if (!evaluated) results.UnionWith(All);
             foreach (var (key, _, _) in equalsNulls)
             {
-                var initialCount = Db.SQL<long>(countSql, key).FirstOrDefault();
+                var initialCount = Db.SQL<long>(CountSQL, key).FirstOrDefault();
                 if (initialCount > 0)
-                    results.ExceptWith(Db.SQL<T>($"{sqlStub} IS NOT NULL", key));
+                    results.ExceptWith(Db.SQL<T>($"{KVPSQL} IS NOT NULL", key));
             }
             return results;
         }
