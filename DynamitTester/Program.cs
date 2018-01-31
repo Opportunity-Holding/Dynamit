@@ -66,6 +66,7 @@ namespace DynamitTester
 
                 new MyDict
                 {
+                    Foo = "TheThird",
                     ["Id"] = 3,
                     ["Byte"] = (byte) 122,
                     ["String"] = "A",
@@ -153,12 +154,14 @@ namespace DynamitTester
             var third = Finder<MyDict>.Where("Id", EQUALS, 3);
             var firstAndSecond = Finder<MyDict>.All.Where(dict => dict["Id"] < 3);
             var second = Finder<MyDict>.Where(("String", EQUALS, "A"), ("Byte", NOT_EQUALS, 122));
-            var alsoThird = Finder<MyDict>.Where(("String", EQUALS, "A")).Where(dict => dict["Byte"] == 122);
+            var alsoThird = Finder<MyDict>.Where(("String", EQUALS, "A")).Where(dict => dict["Byte"] == 122).FirstOrDefault();
+            var alsoThird3 = Finder<MyDict>.Where("$Foo", EQUALS, "TheThird").FirstOrDefault();
+            Assert(alsoThird.Equals(alsoThird3));
 
             var objectNo = myDict.GetObjectNo();
             var objectId = myDict.GetObjectID();
-            var _first = Finder<MyDict>.Where("ObjectID", EQUALS, objectId).FirstOrDefault();
-            var _first2 = Finder<MyDict>.Where("ObjectNo", EQUALS, objectNo).FirstOrDefault();
+            var _first = Finder<MyDict>.Where("$ObjectID", EQUALS, objectId).FirstOrDefault();
+            var _first2 = Finder<MyDict>.Where("$ObjectNo", EQUALS, objectNo).FirstOrDefault();
             Assert(_first.Equals(_first2) && _first.Equals(myDict));
 
             var firstAndThird = Finder<MyDict>.Where("Goo", EQUALS, null);
@@ -167,8 +170,8 @@ namespace DynamitTester
             var json = JsonConvert.SerializeObject(all);
 
             var alsoAll1 = Finder<MyDict>.Where();
-            var alsoAll2 = Finder<MyDict>.Where(null, null, ("Gooo", EQUALS, null));
-            var alsoAll3 = Finder<MyDict>.Where(null, null, ("Gooo", EQUALS, null), null, null);
+            var alsoAll2 = Finder<MyDict>.Where(("Gooo", EQUALS, null));
+            var alsoAll3 = Finder<MyDict>.Where(("Gooo", EQUALS, null));
             Assert(alsoAll1.Count() == 3);
             Assert(alsoAll2.Count() == 3);
             Assert(alsoAll3.Count() == 3);
@@ -259,6 +262,8 @@ namespace DynamitTester
 
     public class MyDict : DDictionary, IDDictionary<MyDict, MyDictKVP>
     {
+        public string Foo;
+
         public MyDictKVP NewKeyPair(MyDict dict, string key, object value = null)
         {
             return new MyDictKVP(dict, key, value);

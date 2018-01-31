@@ -66,6 +66,7 @@
     <Compile Include="Finder.cs" />
     <Compile Include="IDDictionary.cs" />
     <Compile Include="Operator.cs" />
+    <Compile Include="ScConditions.cs" />
     <Compile Include="ValueObjects\Bool\Bool1.cs" />
     <Compile Include="ValueObjects\Byte\Byte1.cs" />
     <Compile Include="ValueObjects\DateTime\DateTime1.cs" />
