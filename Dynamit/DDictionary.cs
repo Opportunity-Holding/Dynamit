@@ -112,7 +112,13 @@ namespace Dynamit
         IEnumerable<object> IReadOnlyDictionary<string, object>.Values => Values;
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression e) => new DMetaObject(e, this);
         protected DDictionary() => KvpTable = DynamitConfig.KvpMappings[GetType().FullName];
-        private void MakeKeyPair(string k, dynamic v) => ((dynamic) this).NewKeyPair((dynamic) this, k, v);
+
+        private void MakeKeyPair(string k, dynamic v)
+        {
+            if (k.ElementAtOrDefault(0) == '$') return;
+            ((dynamic) this).NewKeyPair((dynamic) this, k, v);
+        }
+
         private string KSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =? AND t.Key =?";
         private string TSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?";
         public IEnumerable<DKeyValuePair> KeyValuePairs => Db.SQL<DKeyValuePair>(TSQL, this);
