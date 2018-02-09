@@ -243,3 +243,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/Documentation/._API Reference.md
+/._LICENSE
+/._README.md
