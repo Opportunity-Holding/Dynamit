@@ -2,7 +2,7 @@
 
 ## A simple example
 
-Think of Dynamit dynamic tables as being to regular static database classes what .NET `Dictionary` objects are to regular .NET classes. In fact, they are Starcounter database classes that implement the `IDictionary<string, object>` interface.
+Think of Dynamit dynamic tables as being to regular static database classes what .NET `Dictionary` objects are to regular .NET classes. In fact, they are built as Starcounter database classes that implement the `IDictionary<string, object>` interface.
 
 ```csharp
 using Dynamit;
