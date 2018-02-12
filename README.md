@@ -2,11 +2,7 @@ _By Erik von Krusenstierna (erik.von.krusenstierna@mopedo.com)_
 
 # What is Dynamit?
 
-<<<<<<< HEAD
-Dynamit is a free to use and open-source Starcounter class library and .NET package developed by Mopedo, for creating and querying dynamic database tables in Starcounter applications. This article will cover the basics of Dynamit and how to set it up in a Visual Studio project.
-=======
 Dynamit is a free to use open-source Starcounter class library and .NET package developed by Mopedo, for creating and querying dynamic database tables in Starcounter applications. This article will cover the basics of Dynamit and how to set it up in a Visual Studio project.
->>>>>>> 48eebe088a6533524287a624803249882d1f485b
 
 Dynamit is distributed as a [package](https://www.nuget.org/packages/Dynamit) on the NuGet Gallery, and an easy way to install it in an active Visual Studio project is by entering the following into the NuGet Package Manager console:
 
