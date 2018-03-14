@@ -192,7 +192,7 @@ System.Decimal              System.UInt32               System.String
 System.Int16                System.UInt64
 ```
 
-Since `DDictionary` implements `IDictionary<string, object>`, most proper JSON serializers can deserialize straight to `DDictionary`. The Jil serializer and Newtonsoft Json.net are two examples of such serializers. When deserializing to `DDictionary`, the serializer will try to insert dynamic values, that is, objects implementing `IDynamicMetaObjectProvider` into the `DDictionary`. Dynamit can handle this, and will automatically try to make the following casts, in order, when deserializing values of unknown dynamic type:
+Since `DDictionary` implements `IDictionary<string, object>`, most proper JSON serializers can deserialize straight to `DDictionary`. The [Jil](https://github.com/kevin-montrose/Jil) and [JSON.net](https://www.newtonsoft.com/json) serializers are two popular examples. When deserializing to `DDictionary`, the serializer will try to insert dynamic values, that is, objects implementing `IDynamicMetaObjectProvider` into the `DDictionary`. Dynamit can handle this, and will automatically try to make the following casts, in order, when deserializing values of unknown dynamic type:
 
 ```
 If item can be converted to System.DateTime, convert to System.DateTime
