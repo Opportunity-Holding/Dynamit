@@ -230,4 +230,4 @@ product.Product_date.AddDays(1).ToString()
 
 ## See also
 
-Dynamit is used by [RESTar](https://github.com/Mopedo/Home/tree/master/RESTar), a package developed by Mopedo to help create powerful RESTful web services on the Starcounter system. Using RESTar, REST clients can insert arbitrary data into `DDictionary` objects.
+Dynamit is used by [RESTar](https://github.com/Mopedo/Home/tree/master/RESTar), a package developed by Mopedo to help create powerful RESTful web services for Starcounter applications. Using RESTar, REST clients can insert arbitrary data into `DDictionary` objects.
