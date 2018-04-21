@@ -13,6 +13,8 @@ namespace DynamitExample
     {
         public static void Main()
         {
+            #region
+
             DynamitConfig.Init();
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
@@ -81,8 +83,37 @@ namespace DynamitExample
             });
 
             var xs = "";
+
+            #endregion
+
+            dynamic prod1 = null;
+
+            Db.TransactAsync(() =>
+            {
+                prod1 = new DynamicProduct();
+                prod1.MyDynamicMember = "hej";
+            });
+            var s1 = prod1.MyDynamicMember;
+
+            var le = s1.Length;
+
+            Finder<DynamicProduct>.Where("MyDynamicMember", EQUALS, "hej");
         }
     }
+
+    [Database]
+    public class MyDbClass
+    {
+        public string Mstr { get; set; }
+        public Other Myother { get; set; }
+        public Third Mythird => new Third();
+        public DynamicProduct Product { get; set; }
+    }
+
+    [Database]
+    public class Other { }
+
+    public class Third { }
 
     public class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKVP>
     {
