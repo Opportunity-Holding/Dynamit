@@ -92,14 +92,12 @@ namespace Dynamit
             return results;
         }
 
-
         private static readonly string StaticSQL = $"SELECT t FROM {typeof(T).FullName.Fnuttify()} t WHERE ";
 
         private static readonly string KVPSQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
                                                 $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
 
         private static readonly string CountSQL = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable.Fnuttify()} t WHERE t.Key =?";
-
 
         private static ScConditions GetScConditions(IEnumerable<(string key, Operator op, object value)> conds)
         {
@@ -155,7 +153,6 @@ namespace Dynamit
             }
             return new ScConditions(objectNo, clause, literals?.ToArray());
         }
-
 
         private static string GetSql(Operator op)
         {
