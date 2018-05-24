@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Dynamit.ValueObjects;
 using Starcounter;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
@@ -10,13 +11,15 @@ namespace Dynamit
     [Database]
     public abstract class DKeyValuePair : IEntity
     {
-        public DDictionary Dictionary;
-        public readonly string Key;
-        public int? ValueHash;
+        public DDictionary Dictionary { get; }
+        public string Key { get; }
+        public int? ValueHash { get; private set; }
+        public TypeCode ValueTypeCode { get; internal set; }
+        public ulong? ValueObjectNo { get; private set; }
+
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
-        private dynamic GetValueObject() => ValueObjectNo == null ? null : DbHelper.FromID(ValueObjectNo.Value);
-        public ulong? ValueObjectNo;
+        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.FromId(ValueObjectNo.Value);
         public void OnDelete() => ((object) GetValueObject())?.Delete();
         public static implicit operator KVP(DKeyValuePair pair) => new KVP(pair.Key, pair.Value);
         public long ByteCount => Encoding.UTF8.GetByteCount(Key) + (GetValueObject()?.ByteCount ?? 0) + 16;
@@ -27,7 +30,7 @@ namespace Dynamit
             private set
             {
                 if (value == null) return;
-                (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
+                (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make((object) value);
             }
         }
 

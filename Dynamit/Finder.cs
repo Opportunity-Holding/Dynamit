@@ -43,61 +43,103 @@ namespace Dynamit
         public static IEnumerable<T> Where(params (string key, Operator op, object value)[] equalityConditions)
         {
             if (equalityConditions.Length == 0) return All;
-            var results = new HashSet<T>();
-            var first = true;
-
-            void addToResults(IEnumerable<T> toAdd)
+            var dynamicEqualsNull = equalityConditions.Where(c =>
             {
-                if (first)
+                switch (c.key?.FirstOrDefault())
                 {
-                    results.UnionWith(toAdd);
-                    first = false;
+                    case null:
+                    case '\0': throw new Exception("Invalid Finder condition. Key cannot be null or empty");
+                    case '$': return false;
+                    default: return c.value == null && c.op == EQUALS;
                 }
-                else results.IntersectWith(toAdd);
-            }
+            }).ToArray();
 
-            var dynamicEqualsNulls = new List<(string key, Operator op, dynamic value)>();
-            equalityConditions
-                .GroupBy(cond => !string.IsNullOrWhiteSpace(cond.key)
-                    ? cond.key[0] == '$'
-                    : throw new Exception("Invalid Finder condition. Key cannot be null or empty"))
+            if (dynamicEqualsNull.Length == equalityConditions.Length)
+            {
+                var set = new HashSet<T>(All);
+                foreach (var (key, _, _) in dynamicEqualsNull)
+                    set.ExceptWith(Db.SQL<T>(WithKey, key));
+                return set;
+            }
+            var first = true;
+            var results = equalityConditions
+                .GroupBy(cond => cond.key[0] == '$')
                 .OrderByDescending(p => p.Key)
-                .ForEach(group =>
+                .Aggregate(new HashSet<T>(), (set, group) =>
                 {
-                    if (group.Key)
+                    void process(IEnumerable<T> image)
+                    {
+                        if (first)
+                        {
+                            set.UnionWith(image);
+                            first = false;
+                        }
+                        else set.IntersectWith(image);
+                    }
+
+                    if (group.Key) // Key matches declared member
                     {
                         var scConditions = GetScConditions(group);
                         if (scConditions.ObjectNo.HasValue && scConditions.WhereString == null)
-                            addToResults(new[] {Db.FromId<T>(scConditions.ObjectNo.Value)});
-                        else addToResults(Db.SQL<T>(StaticSQL + scConditions.WhereString, scConditions.Values));
+                            process(new[] {Db.FromId<T>(scConditions.ObjectNo.Value)});
+                        else process(Db.SQL<T>($"{StaticSelect} WHERE {scConditions.WhereString}", scConditions.Values));
                     }
-                    else
-                        group.ForEach(cond =>
+                    else // Key matches dynamic member
+                    {
+                        foreach (var (key, op, value) in group)
                         {
-                            if (cond.value == null)
+                            var valueTypeCode = Type.GetTypeCode(value?.GetType());
+                            switch (valueTypeCode)
                             {
-                                if (cond.op == EQUALS) dynamicEqualsNulls.Add(cond);
-                                else addToResults(Db.SQL<T>($"{KVPSQL} IS NOT NULL", cond.key));
+                                case TypeCode.Boolean:
+                                case TypeCode.String:
+                                case TypeCode.DateTime: break;
+                                default:
+                                    valueTypeCode = TypeCode.Object;
+                                    break;
                             }
-                            else addToResults(Db.SQL<T>($"{KVPSQL} {GetSql(cond.op)}?", cond.key, cond.value.GetHashCode()));
-                        });
+                            switch (value)
+                            {
+                                case null when op == NOT_EQUALS:
+                                    process(Db.SQL<T>(WithKey, key));
+                                    break;
+                                case null: break;
+
+                                case var other when op == NOT_EQUALS:
+                                    var image = Db
+                                        .SQL<T>(WithKeyAndNotEqualsValue, key, valueTypeCode, other.GetHashCode())
+                                        .Union(All.Except(Db.SQL<T>(WithKey, key)));
+                                    process(image);
+                                    break;
+                                case var other:
+                                    process(Db.SQL<T>(WithKeyAndEqualsValue, key, valueTypeCode, other.GetHashCode()));
+                                    break;
+                            }
+                        }
+                    }
+                    return set;
                 });
-            if (first) results.UnionWith(All);
-            foreach (var (key, _, _) in dynamicEqualsNulls)
-            {
-                var initialCount = Db.SQL<long>(CountSQL, key).FirstOrDefault();
-                if (initialCount > 0)
-                    results.ExceptWith(Db.SQL<T>($"{KVPSQL} IS NOT NULL", key));
-            }
+
+            if (dynamicEqualsNull.Length == 0)
+                return results;
+            foreach (var (key, _, _) in dynamicEqualsNull)
+                results.ExceptWith(Db.SQL<T>(WithKey, key));
             return results;
         }
 
-        private static readonly string StaticSQL = $"SELECT t FROM {typeof(T).FullName.Fnuttify()} t WHERE ";
+        private static readonly string StaticSelect = $"SELECT t FROM {typeof(T).FullName.Fnuttify()} t";
 
-        private static readonly string KVPSQL = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
-                                                $"FROM {TableInfo<T>.KvpTable} t WHERE t.Key =? AND t.ValueHash";
+        private static readonly string WithKey = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
+                                                 $"FROM {TableInfo<T>.KvpTable} t " +
+                                                 "WHERE t.Key =?";
 
-        private static readonly string CountSQL = $"SELECT COUNT(t) FROM {TableInfo<T>.KvpTable.Fnuttify()} t WHERE t.Key =?";
+        private static readonly string WithKeyAndNotEqualsValue = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
+                                                                  $"FROM {TableInfo<T>.KvpTable} t " +
+                                                                  "WHERE t.Key =? AND (t.ValueTypeCode <>? OR t.ValueHash <>?)";
+
+        private static readonly string WithKeyAndEqualsValue = $"SELECT CAST(t.Dictionary AS {typeof(T).FullName.Fnuttify()}) " +
+                                                               $"FROM {TableInfo<T>.KvpTable} t " +
+                                                               "WHERE t.Key =? AND t.ValueTypeCode =? AND t.ValueHash =?";
 
         private static ScConditions GetScConditions(IEnumerable<(string key, Operator op, object value)> conds)
         {

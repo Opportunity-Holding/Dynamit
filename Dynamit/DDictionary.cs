@@ -29,14 +29,23 @@ namespace Dynamit
         /// </summary>
         public string KvpTable { get; }
 
+        protected virtual object GetDeclaredMemberValue(string key) => null;
+        protected virtual void SetDeclaredMemberValue(string key, object value) { }
+
         /// <inheritdoc />
         public void Add(KVP item)
         {
-            if (item.Key == null) throw new ArgumentNullException(nameof(item.Key));
-            if (item.Value == null) return;
-            if (ContainsKey(item.Key))
-                throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
-            MakeKeyPair(item.Key, item.Value);
+            switch (item.Key?.FirstOrDefault())
+            {
+                case null: throw new ArgumentNullException(nameof(item.Key));
+                case '\0': throw new ArgumentException("Key cannot be the empty string");
+                case '$': throw new ArgumentException("Keys of dictionary members cannot begin with '$'");
+                case var _ when item.Value == null: return;
+                case var _ when ContainsKey(item.Key): throw new ArgumentException($"Error: key '{item.Key}' already in dictionary");
+                default:
+                    MakeKeyPair(item.Key, item.Value);
+                    break;
+            }
         }
 
         /// <inheritdoc />
@@ -52,48 +61,75 @@ namespace Dynamit
             }
         }
 
+        private DKeyValuePair GetPair(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
+
         /// <inheritdoc />
         public bool Remove(string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-            try
+            switch (key.FirstOrDefault())
             {
-                var obj = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
-                obj?.Delete();
-                return true;
-            }
-            catch
-            {
-                return false;
+                case '\0': return false;
+                case '$': throw new ArgumentException("Cannot remove declared members");
+                case var _ when GetPair(key) is DKeyValuePair pair:
+                    pair.Delete();
+                    return true;
+                default: return false;
             }
         }
 
         public bool TryGetValue(string key, out object value)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            var match = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
-            value = match?.Value;
-            return match != null;
+            switch (key.FirstOrDefault())
+            {
+                case '\0':
+                    value = null;
+                    return false;
+                case '$':
+                    value = GetDeclaredMemberValue(key.Substring(1));
+                    return value != null;
+                case var _ when GetPair(key) is DKeyValuePair pair:
+                    value = pair.Value;
+                    return value != null;
+                default:
+                    value = null;
+                    return false;
+            }
         }
 
         public dynamic this[string key]
         {
             get
             {
-                if (key == null) throw new ArgumentNullException(nameof(key));
-                var match = Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault();
-                if (match == null) throw new KeyNotFoundException();
-                return match.Value;
+                switch (key.FirstOrDefault())
+                {
+                    case '\0': return null;
+                    case '$': return GetDeclaredMemberValue(key.Substring(1));
+                    case var _ when GetPair(key) is DKeyValuePair pair: return pair.Value;
+                    default: throw new KeyNotFoundException();
+                }
             }
             set
             {
-                if (key == null) throw new ArgumentNullException(nameof(key));
-                if (value is IDynamicMetaObjectProvider)
-                    value = ValueObject.GetStaticType(value);
-                Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault()?.Delete();
-                if (value == null) return;
-                MakeKeyPair(key, value);
+                switch (key.FirstOrDefault())
+                {
+                    case '\0': throw new ArgumentException("Key cannot be the empty string");
+                    case '$':
+                        SetDeclaredMemberValue(key.Substring(1), value);
+                        break;
+                    case var _ when GetPair(key) is DKeyValuePair pair:
+                        pair.Delete();
+                        if (value == null) return;
+                        if (value is IDynamicMetaObjectProvider)
+                            value = ValueObject.GetStaticType(value);
+                        MakeKeyPair(key, value);
+                        break;
+                    default:
+                        if (value == null) return;
+                        if (value is IDynamicMetaObjectProvider)
+                            value = ValueObject.GetStaticType(value);
+                        MakeKeyPair(key, value);
+                        break;
+                }
             }
         }
 
@@ -103,7 +139,8 @@ namespace Dynamit
         public bool Remove(KVP item) => Remove(item.Key);
         public int Count => KeyValuePairs.Count();
         public bool IsReadOnly => false;
-        public bool ContainsKey(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault() != null;
+        public bool ContainsKey(string key) => TryGetValue(key, out _);
+
         public void Add(string key, object value) => Add(new KVP(key, value));
         public void OnDelete() => Clear();
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
@@ -123,7 +160,7 @@ namespace Dynamit
         private string TSQL => $"SELECT t FROM {KvpTable} t WHERE t.Dictionary =?";
         public IEnumerable<DKeyValuePair> KeyValuePairs => Db.SQL<DKeyValuePair>(TSQL, this);
         private IEnumerable<KVP> _kvPairs => Db.SQL<DKeyValuePair>(TSQL, this).Select(p => new KVP(p.Key, p.Value));
-        private object Get(string key) => ContainsKey(key) ? this[key] : null;
+        private object Get(string key) => SafeGet(key);
         private object Set(string key, object value) => this[key] = value;
 
         public void Clear()
@@ -134,7 +171,11 @@ namespace Dynamit
         /// <summary>
         /// Gets the value of a key from a DDictionary, or null if the dictionary does not contain the key.
         /// </summary>
-        public dynamic SafeGet(string key) => Db.SQL<DKeyValuePair>(KSQL, this, key).FirstOrDefault()?.Value;
+        public dynamic SafeGet(string key)
+        {
+            TryGetValue(key, out var value);
+            return value;
+        }
 
         private class DMetaObject : DynamicMetaObject
         {

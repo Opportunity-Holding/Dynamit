@@ -26,7 +26,8 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.1</LangVersion>
+    <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Debug\Dynamit.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <DebugType>pdbonly</DebugType>

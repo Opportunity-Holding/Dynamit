@@ -23,27 +23,27 @@ namespace Dynamit.ValueObjects
     [Database]
     public abstract class ValueObject
     {
-        internal static (ulong? objectNo, int? hash) Make(object value)
+        internal static (ulong? objectNo, int? hash, TypeCode typeCode) Make(object value)
         {
             var hash = value?.GetHashCode();
             switch (value)
             {
-                case string @string: return (new String1(@string).GetObjectNo(), hash);
-                case bool @bool: return (new Bool1 {content = @bool}.GetObjectNo(), hash);
-                case byte @byte: return (new Byte1 {content = @byte}.GetObjectNo(), hash);
-                case System.DateTime datetime: return (new DateTime1 {content = datetime}.GetObjectNo(), hash);
-                case decimal @decimal: return (new Decimal1 {content = decimal.Round(@decimal, 6)}.GetObjectNo(), hash);
-                case double @double: return (new Double1 {content = @double}.GetObjectNo(), hash);
-                case int @int: return (new Int1 {content = @int}.GetObjectNo(), hash);
-                case long @long: return (new Long1 {content = @long}.GetObjectNo(), hash);
-                case sbyte @sbyte: return (new Sbyte1 {content = @sbyte}.GetObjectNo(), hash);
-                case short @short: return (new Short1 {content = @short}.GetObjectNo(), hash);
-                case float @float: return (new Single1 {content = @float}.GetObjectNo(), hash);
-                case uint @uint: return (new Uint1 {content = @uint}.GetObjectNo(), hash);
-                case ulong @ulong: return (new Ulong1 {content = @ulong}.GetObjectNo(), hash);
-                case ushort @ushort: return (new Ushort1 {content = @ushort}.GetObjectNo(), hash);
+                case string @string: return (new String1(@string).GetObjectNo(), hash, TypeCode.String);
+                case bool @bool: return (new Bool1 {content = @bool}.GetObjectNo(), hash, TypeCode.Boolean);
+                case byte @byte: return (new Byte1 {content = @byte}.GetObjectNo(), hash, TypeCode.Object);
+                case System.DateTime datetime: return (new DateTime1 {content = datetime}.GetObjectNo(), hash, TypeCode.DateTime);
+                case decimal @decimal: return (new Decimal1 {content = decimal.Round(@decimal, 6)}.GetObjectNo(), hash, TypeCode.Object);
+                case double @double: return (new Double1 {content = @double}.GetObjectNo(), hash, TypeCode.Object);
+                case int @int: return (new Int1 {content = @int}.GetObjectNo(), hash, TypeCode.Object);
+                case long @long: return (new Long1 {content = @long}.GetObjectNo(), hash, TypeCode.Object);
+                case sbyte @sbyte: return (new Sbyte1 {content = @sbyte}.GetObjectNo(), hash, TypeCode.Object);
+                case short @short: return (new Short1 {content = @short}.GetObjectNo(), hash, TypeCode.Object);
+                case float @float: return (new Single1 {content = @float}.GetObjectNo(), hash, TypeCode.Object);
+                case uint @uint: return (new Uint1 {content = @uint}.GetObjectNo(), hash, TypeCode.Object);
+                case ulong @ulong: return (new Ulong1 {content = @ulong}.GetObjectNo(), hash, TypeCode.Object);
+                case ushort @ushort: return (new Ushort1 {content = @ushort}.GetObjectNo(), hash, TypeCode.Object);
                 case IDynamicMetaObjectProvider dyn: return Make(GetStaticType(dyn));
-                case null: return (null, null);
+                case null: return (null, null, 0);
                 default: throw new InvalidValueTypeException(value.GetType());
             }
         }

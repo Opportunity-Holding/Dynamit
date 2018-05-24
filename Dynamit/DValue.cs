@@ -1,4 +1,5 @@
-﻿using Dynamit.ValueObjects;
+﻿using System;
+using Dynamit.ValueObjects;
 using Dynamit.ValueObjects.String;
 using Starcounter;
 
@@ -9,12 +10,13 @@ namespace Dynamit
     [Database]
     public abstract class DValue : IEntity
     {
+        public int? ValueHash { get; private set; }
+        public TypeCode ValueTypeCode { get; private set; }
+        public ulong? ValueObjectNo { get; private set; }
+
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
-        public int? ValueHash;
-        public ulong? ValueObjectNo;
-        protected DValue(object value = null) => (ValueObjectNo, ValueHash) = ValueObject.Make(value);
-        private dynamic GetValueObject() => ValueObjectNo == null ? null : DbHelper.FromID(ValueObjectNo.Value);
+        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.FromId(ValueObjectNo.Value);
         public void OnDelete() => ((object) GetValueObject())?.Delete();
 
         public dynamic Value
@@ -33,7 +35,7 @@ namespace Dynamit
                 }
                 if (valueObject == null)
                 {
-                    (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
+                    (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make((object) value);
                     return;
                 }
                 if (valueObject.content == null)
@@ -46,8 +48,10 @@ namespace Dynamit
                     }
                 }
                 Db.Delete(valueObject);
-                (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
+                (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make((object) value);
             }
         }
+
+        protected DValue(object value = null) => (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make(value);
     }
 }

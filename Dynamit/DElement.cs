@@ -1,4 +1,5 @@
-﻿using Dynamit.ValueObjects;
+﻿using System;
+using Dynamit.ValueObjects;
 using Starcounter;
 
 #pragma warning disable 1591
@@ -11,9 +12,10 @@ namespace Dynamit
         public DList List;
         public int Index { get; internal set; }
         public int? ValueHash;
+        public TypeCode ValueTypeCode;
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
-        private dynamic GetValueObject() => ValueObjectNo == null ? null : DbHelper.FromID(ValueObjectNo.Value);
+        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.FromId(ValueObjectNo.Value);
         public ulong? ValueObjectNo;
         public void OnDelete() => ((object) GetValueObject())?.Delete();
 
@@ -23,7 +25,7 @@ namespace Dynamit
             private set
             {
                 if (value == null) return;
-                (ValueObjectNo, ValueHash) = ValueObject.Make((object) value);
+                (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make((object) value);
             }
         }
 

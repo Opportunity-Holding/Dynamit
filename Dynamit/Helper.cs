@@ -19,11 +19,6 @@ namespace Dynamit
             where type.IsSubclassOf(baseType)
             select type;
 
-        internal static T GetReference<T>(this ulong? objectNo) where T : class
-        {
-            return DbHelper.FromID(objectNo.GetValueOrDefault()) as T;
-        }
-
         internal static TAttribute GetAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
         {
             return type?.GetCustomAttributes<TAttribute>().FirstOrDefault();

@@ -66,11 +66,27 @@ namespace Dynamit
             var elements = typeof(DElement).GetConcreteSubclasses();
             if (!setupIndexes) return;
 
-            foreach (var kvp in pairs)
+            foreach (var pair in pairs)
             {
-                CreateIndex(kvp, "Dictionary");
-                CreateIndex(kvp, "Dictionary", "Key");
-                CreateIndex(kvp, "Key", "ValueHash");
+                CreateIndex(pair, "Dictionary", "Key");
+                CreateIndex(pair, "Key", "ValueTypeCode", "ValueHash");
+
+                foreach (DKeyValuePair old in Db.SQL<DKeyValuePair>($"SELECT t FROM {pair} t WHERE t.ValueTypeCode =?", 0))
+                {
+                    object value = old.Value;
+                    var valueTypeCode = Type.GetTypeCode(value.GetType());
+                    switch (valueTypeCode)
+                    {
+                        case TypeCode.String:
+                        case TypeCode.Boolean:
+                        case TypeCode.DateTime:
+                            Db.TransactAsync(() => old.ValueTypeCode = valueTypeCode);
+                            break;
+                        default:
+                            Db.TransactAsync(() => old.ValueTypeCode = TypeCode.Object);
+                            break;
+                    }
+                }
             }
             foreach (var element in elements)
             {
