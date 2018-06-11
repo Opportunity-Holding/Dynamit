@@ -38,7 +38,7 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Release\Dynamit.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Dynamit.xml</DocumentationFile>
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <PropertyGroup>

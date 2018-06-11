@@ -96,6 +96,27 @@ namespace Dynamit
             }
         }
 
+        public bool TryGetValue(string key, out object value, out string actualKey)
+        {
+            actualKey = null;
+            switch (key.FirstOrDefault())
+            {
+                case '\0':
+                    value = null;
+                    return false;
+                case '$':
+                    value = GetDeclaredMemberValue(key.Substring(1));
+                    return value != null;
+                case var _ when GetPair(key) is DKeyValuePair pair:
+                    value = pair.Value;
+                    actualKey = pair.Key;
+                    return value != null;
+                default:
+                    value = null;
+                    return false;
+            }
+        }
+
         public dynamic this[string key]
         {
             get
