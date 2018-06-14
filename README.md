@@ -144,7 +144,7 @@ Finder<Product>
     .Where(d => d.SafeGet("Price") > 3);
 ```
 
-Here we can use `Finder.Where()` for the equality condition, but need LINQ for the non-equality condition. The `DDictionary.SafeGet()` method can be used to get the value of a dynamic object property, or `null` if there is no such property.
+Here we can use `Finder.Where()` for the equality condition, but need LINQ for the non-equality condition. The `DDictionary.SafeGet()` method can be used to get the value of a dynamic object property, or `null` if there is no property with that name.
 
 ### `Dynamit.DValue`
 
