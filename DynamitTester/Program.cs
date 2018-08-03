@@ -126,7 +126,7 @@ namespace DynamitTester
             Assert(!myDict.TryGetValue("Test1", out t01));
             Db.TransactAsync(() => myDict.Remove("Test1"));
             Assert(!myDict.TryGetValue("Test1", out t01));
-            Db.TransactAsync(() => myDict.Remove(test2kvp));
+            Db.TransactAsync(() => myDict.Remove(test2kvp.Key));
             Assert(!myDict.TryGetValue("Test2", out t01));
             var arr = new KeyValuePair<string, object>[100];
             myDict.CopyTo(arr, 0);

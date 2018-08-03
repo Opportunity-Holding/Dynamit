@@ -157,7 +157,16 @@ namespace Dynamit
         public IEnumerator<KVP> GetEnumerator() => _kvPairs.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public bool Contains(KVP item) => _kvPairs.Contains(item);
-        public bool Remove(KVP item) => Remove(item.Key);
+
+        bool ICollection<KVP>.Remove(KVP item)
+        {
+            var pair = GetPair(item.Key);
+            if (pair == null) return false;
+            if (item.Value?.Equals((object) pair.Value) == true)
+                return Remove(item.Key);
+            return false;
+        }
+
         public int Count => KeyValuePairs.Count();
         public bool IsReadOnly => false;
         public bool ContainsKey(string key) => TryGetValue(key, out _);
