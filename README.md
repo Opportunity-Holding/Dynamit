@@ -134,7 +134,7 @@ Find all products with a product id larger than `5`:
 Finder<Product>.All.Where(d => d["ProductId"] > 5);
 ```
 
-Here we must use `Finder.All` + LINQ, since the `>` operator generally cannot be applied to value hashes.
+Here we must use `Finder.All` + LINQ, since we generally do not get the correct results when using the `>` operator with two value hashes as operands.
 
 Find all products with a product group equal to `"A1"` and price higher than `3`:
 
