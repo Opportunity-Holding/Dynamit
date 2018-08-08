@@ -10,15 +10,21 @@ namespace Dynamit.ValueObjects.String
     public class String1 : ValueObject
     {
         public string content { get; internal set; }
+        internal override long ByteCount => Encoding.UTF8.GetByteCount(content);
         public String1(string value) => content = EscapeStrings ? Escaped(value) : value;
         public override string ToString() => content;
-        internal override long ByteCount => Encoding.UTF8.GetByteCount(content);
 
         private static string Escaped(string input)
         {
-            if (input[0] == '\"' && input[input.Length - 1] == '\"')
-                return input.Substring(1, input.Length - 2);
-            return input;
+            switch (input)
+            {
+                case null:
+                case "":
+                case "\"": return input;
+                case var _ when input[0] == '\"' && input[input.Length - 1] == '\"':
+                    return input.Substring(1, input.Length - 2);
+                default: return input;
+            }
         }
     }
 }

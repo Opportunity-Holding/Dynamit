@@ -54,6 +54,8 @@ namespace DynamitTester
                 d.Ushort = (ushort) 12331;
                 d.Null = null;
                 d.Thing = "SwooBoo";
+                d.EmptyString = "";
+                d.JustAQuote = "\"";
 
                 new MyDict
                 {
