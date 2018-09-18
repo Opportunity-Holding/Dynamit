@@ -31,6 +31,7 @@ namespace Dynamit
         internal static bool EscapeStrings;
         internal static IReadOnlyDictionary<string, string> KvpMappings { get; }
         internal static IList<Type> Dicts { get; }
+        private static bool IsInitiated { get; set; }
 
         static DynamitConfig()
         {
@@ -51,6 +52,7 @@ namespace Dynamit
         /// escaped to ordinary strings. Necessary for some string casts to work properly with RESTar</param>
         public static void Init(bool setupIndexes = true, bool enableEscapeStrings = false)
         {
+            if (IsInitiated) return;
             EscapeStrings = enableEscapeStrings;
             var dictsWithMissingInterface = Dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
             if (dictsWithMissingInterface.Any())
@@ -64,7 +66,11 @@ namespace Dynamit
             if (listsWithMissingAttribute.Any())
                 throw new DListException(listsWithMissingAttribute.First());
             var elements = typeof(DElement).GetConcreteSubclasses();
-            if (!setupIndexes) return;
+            if (!setupIndexes)
+            {
+                IsInitiated = true;
+                return;
+            }
 
             foreach (var pair in pairs)
             {
@@ -94,6 +100,7 @@ namespace Dynamit
                 CreateIndex(element, "List", "Index");
                 CreateIndex(element, "List", "ValueHash");
             }
+            IsInitiated = true;
         }
 
         internal static string Fnuttify(this string sqlKey) => $"\"{sqlKey.Replace(".", "\".\"")}\"";

@@ -79,16 +79,9 @@ namespace Dynamit
         /// <inheritdoc />
         protected DKeyValuePair(DDictionary dict, string key, object value = null)
         {
-            try
-            {
-                Dictionary = dict;
-                Key = key;
-                Value = value;
-            }
-            catch (InvalidValueTypeException e)
-            {
-                this.CancelConstructor(e);
-            }
+            Dictionary = dict;
+            Key = key;
+            Value = value;
         }
     }
 }
