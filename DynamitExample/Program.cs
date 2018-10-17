@@ -115,6 +115,7 @@ namespace DynamitExample
 
     public class Third { }
 
+    [Database]
     public class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKVP>
     {
         public DynamicProductKVP NewKeyPair(DynamicProduct dict, string key, object value = null)
@@ -123,11 +124,13 @@ namespace DynamitExample
         }
     }
 
+    [Database]
     public class DynamicProductKVP : DKeyValuePair
     {
         public DynamicProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
 
+    [Database]
     public class Product : DDictionary, IDDictionary<Product, ProductKVP>
     {
         public ProductKVP NewKeyPair(Product dict, string key, object value = null)
@@ -136,12 +139,13 @@ namespace DynamitExample
         }
     }
 
+    [Database]
     public class ProductKVP : DKeyValuePair
     {
         public ProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
 
-    [DList(typeof(DynamicListElement))]
+    [Database, DList(typeof(DynamicListElement))]
     public class DynamicList : DList
     {
         protected override DElement NewElement(DList dict, int index, object value = null)
@@ -150,6 +154,7 @@ namespace DynamitExample
         }
     }
 
+    [Database]
     public class DynamicListElement : DElement
     {
         public DynamicListElement(DList list, int index, object value = null) : base(list, index, value) { }
@@ -159,14 +164,15 @@ namespace DynamitExample
     [Database]
     public class Condition : IEntity
     {
-        public string PropertyName;
+        public string PropertyName { get; set; }
 
         //public OperatorsEnum Operator;
-        public ConditionValue Value; // This is our DValue member
+        public ConditionValue Value { get; set; } // This is our DValue member
 
         public void OnDelete() => Value?.Delete();
     }
 
+    [Database]
     public class ConditionValue : DValue
     {
         public ConditionValue(object value) => Value = value;

@@ -262,9 +262,10 @@ namespace DynamitTester
     }
 
 
+    [Database]
     public class MyDict : DDictionary, IDDictionary<MyDict, MyDictKVP>
     {
-        public string Foo;
+        public string Foo { get; set; }
 
         public MyDictKVP NewKeyPair(MyDict dict, string key, object value = null)
         {
@@ -272,6 +273,7 @@ namespace DynamitTester
         }
     }
 
+    [Database]
     public class MyDictKVP : DKeyValuePair
     {
         public MyDictKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }

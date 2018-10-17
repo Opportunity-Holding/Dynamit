@@ -77,7 +77,7 @@ namespace Dynamit
                 CreateIndex(pair, "Dictionary", "Key");
                 CreateIndex(pair, "Key", "ValueTypeCode", "ValueHash");
 
-                foreach (DKeyValuePair old in Db.SQL<DKeyValuePair>($"SELECT t FROM {pair} t WHERE t.ValueTypeCode =?", 0))
+                foreach (var old in Db.SQL<DKeyValuePair>($"SELECT t FROM {pair} t WHERE t.ValueTypeCode =?", 0))
                 {
                     object value = old.Value;
                     var valueTypeCode = Type.GetTypeCode(value.GetType());

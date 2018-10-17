@@ -7,6 +7,7 @@ using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
 namespace Dynamit
 {
+    /// <inheritdoc />
     /// <summary>
     /// The abstract base class for DDictionary key-value pairs
     /// </summary>
