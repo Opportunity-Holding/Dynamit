@@ -46,10 +46,9 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Starcounter, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=AMD64" />
-    <Reference Include="Starcounter.BindingInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=MSIL" />
-    <Reference Include="Starcounter.Internal, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=MSIL" />
-    <Reference Include="Starcounter.QueryProcessor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=MSIL" />
+    <Reference Include="Starcounter, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=AMD64">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -103,6 +102,7 @@
     <PostBuildEvent>IF $(ConfigurationName)==Debug EXIT;
 net use R: \\mac\builds
 cd "$(ProjectDir)"
+scweaver "$(OutDir)$(ProjectName).dll"
 nuget pack -OutputDirectory R:\ -Prop Configuration=Release</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

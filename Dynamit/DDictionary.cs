@@ -20,9 +20,8 @@ namespace Dynamit
     /// A dynamic persistent database type for Starcounter applications
     /// </summary>
     [Database]
-    public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>,
-        IReadOnlyDictionary<string, object>, IReadOnlyCollection<KVP>, IEnumerable<KVP>, IEnumerable, IEntity,
-        IDynamicMetaObjectProvider
+    public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>, IReadOnlyDictionary<string, object>, IReadOnlyCollection<KVP>,
+        IEnumerable<KVP>, IEnumerable, IEntity, IDynamicMetaObjectProvider
     {
         /// <summary>
         /// The name of the table where key-value pairs are stored
