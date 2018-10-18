@@ -9,13 +9,13 @@ using Starcounter;
 namespace Dynamit
 {
     [Database]
-    public abstract class DList : IList<object>, ICollection<object>, IReadOnlyList<object>,
-        IReadOnlyCollection<object>, IEnumerable<object>, IEnumerable, IEntity
+    public abstract class DList : IList<object>, ICollection<object>, IReadOnlyList<object>, IReadOnlyCollection<object>, IEnumerable<object>,
+        IEnumerable, IEntity
     {
         public int HighestIndex { get; private set; }
         public string ElementTable { get; }
 
-        protected DList()
+        public DList()
         {
             ElementTable = GetType().GetAttribute<DListAttribute>().ElementTable.FullName;
             HighestIndex = -1;
