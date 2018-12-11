@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Dynamit.ValueObjects;
 using Starcounter;
+using Starcounter.Nova;
 using static System.Dynamic.BindingRestrictions;
 using static System.Linq.Expressions.Expression;
 using static System.Reflection.BindingFlags;

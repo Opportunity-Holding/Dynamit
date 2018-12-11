@@ -3,30 +3,40 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dynamit", "Dynamit\Dynamit.csproj", "{1C0568E7-1BF6-406D-A345-2A870C23F20C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitExample", "DynamitExample\DynamitExample.csproj", "{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitTester", "DynamitTester\DynamitTester.csproj", "{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dynamit", "Dynamit\Dynamit.csproj", "{A3F83D79-075D-4754-83B7-BF8819A95407}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1C0568E7-1BF6-406D-A345-2A870C23F20C}.Debug|x64.ActiveCfg = Debug|x64
-		{1C0568E7-1BF6-406D-A345-2A870C23F20C}.Debug|x64.Build.0 = Debug|x64
-		{1C0568E7-1BF6-406D-A345-2A870C23F20C}.Release|x64.ActiveCfg = Release|x64
-		{1C0568E7-1BF6-406D-A345-2A870C23F20C}.Release|x64.Build.0 = Release|x64
+		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|x64.ActiveCfg = Debug|x64
 		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|x64.Build.0 = Debug|x64
+		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|Any CPU.ActiveCfg = Release|x64
 		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|x64.ActiveCfg = Release|x64
 		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|x64.Build.0 = Release|x64
+		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|x64.ActiveCfg = Debug|x64
 		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|x64.Build.0 = Debug|x64
+		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|Any CPU.ActiveCfg = Release|x64
 		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|x64.ActiveCfg = Release|x64
 		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|x64.Build.0 = Release|x64
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

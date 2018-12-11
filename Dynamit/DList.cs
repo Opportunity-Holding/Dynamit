@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Starcounter;
+using Starcounter.Nova;
 
 #pragma warning disable 1591
 

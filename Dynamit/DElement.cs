@@ -1,6 +1,7 @@
 ﻿using System;
 using Dynamit.ValueObjects;
 using Starcounter;
+using Starcounter.Nova;
 
 #pragma warning disable 1591
 

@@ -1,4 +1,6 @@
 ﻿using Starcounter;
+using Starcounter.Nova;
+
 #pragma warning disable 1591
 
 namespace Dynamit.ValueObjects.Byte

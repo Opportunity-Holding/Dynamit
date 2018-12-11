@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Starcounter.Nova;
 
 namespace Dynamit
 {
@@ -22,5 +23,7 @@ namespace Dynamit
         {
             return type?.GetCustomAttributes<TAttribute>().FirstOrDefault();
         }
+
+        internal static ulong GetOid(this object obj) => Db.GetOid(obj);
     }
 }

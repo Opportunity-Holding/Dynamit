@@ -1,115 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProductVersion>9.0.20706</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectTypeGuids>{C86118D7-451E-4933-BFEE-A1EFDB162FD7};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{1C0568E7-1BF6-406D-A345-2A870C23F20C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dynamit</RootNamespace>
-    <AssemblyName>Dynamit</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <TargetFrameworkProfile />
-    <StarcounterVersionCompatibility>2.4</StarcounterVersionCompatibility>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <DocumentationFile>bin\Debug\Dynamit.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <PlatformTarget>x64</PlatformTarget>
-    <DocumentationFile>bin\Release\Dynamit.xml</DocumentationFile>
-    <LangVersion>7.2</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Starcounter, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d2df1e81d0ca3abf, processorArchitecture=AMD64">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Starcounter.Nova" Version="0.11.0-alpha-003229" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Attributes.cs" />
-    <Compile Include="DValue.cs" />
-    <Compile Include="DynamitConfig.cs" />
-    <Compile Include="Exceptions.cs" />
-    <Compile Include="DElement.cs" />
-    <Compile Include="DList.cs" />
-    <Compile Include="Finder.cs" />
-    <Compile Include="IDDictionary.cs" />
-    <Compile Include="Operator.cs" />
-    <Compile Include="ScConditions.cs" />
-    <Compile Include="ValueObjects\Bool\Bool1.cs" />
-    <Compile Include="ValueObjects\Byte\Byte1.cs" />
-    <Compile Include="ValueObjects\DateTime\DateTime1.cs" />
-    <Compile Include="ValueObjects\Decimal\Decimal1.cs" />
-    <Compile Include="ValueObjects\Double\Double1.cs" />
-    <Compile Include="ValueObjects\Int\Int1.cs" />
-    <Compile Include="ValueObjects\Long\Long1.cs" />
-    <Compile Include="ValueObjects\Sbyte\Sbyte1.cs" />
-    <Compile Include="ValueObjects\Short\Short1.cs" />
-    <Compile Include="ValueObjects\Single\Single1.cs" />
-    <Compile Include="ValueObjects\Key\Key1.cs" />
-    <Compile Include="ValueObjects\String\String1.cs" />
-    <Compile Include="ValueObjects\Uint\Uint1.cs" />
-    <Compile Include="ValueObjects\Ulong\Ulong1.cs" />
-    <Compile Include="ValueObjects\Ushort\Ushort1.cs" />
-    <Compile Include="ValueObjects\ValueObject.cs" />
-    <Compile Include="Helper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DDictionary.cs" />
-    <Compile Include="DKeyValuePair.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Dynamit.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(StarcounterBin)\Starcounter.MsBuild.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>IF $(ConfigurationName)==Debug EXIT;
-net use R: \\mac\builds
-cd "$(ProjectDir)"
-scweaver "$(OutDir)$(ProjectName).dll"
-nuget pack -OutputDirectory R:\ -Prop Configuration=Release</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

@@ -65,12 +65,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dynamit\Dynamit.csproj">
-      <Project>{1c0568e7-1bf6-406d-a345-2a870c23f20c}</Project>
-      <Name>Dynamit</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="weaver.ignore">

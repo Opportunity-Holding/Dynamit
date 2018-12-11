@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Dynamit.ValueObjects;
 using Starcounter;
+using Starcounter.Nova;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
 namespace Dynamit
