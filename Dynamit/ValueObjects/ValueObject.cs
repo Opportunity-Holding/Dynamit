@@ -14,7 +14,6 @@ using Dynamit.ValueObjects.String;
 using Dynamit.ValueObjects.Uint;
 using Dynamit.ValueObjects.Ulong;
 using Dynamit.ValueObjects.Ushort;
-using Starcounter;
 using Starcounter.Nova;
 
 #pragma warning disable 1591
@@ -22,7 +21,7 @@ using Starcounter.Nova;
 namespace Dynamit.ValueObjects
 {
     [Database]
-    public abstract class ValueObject
+    public abstract class ValueObject : IDynamitEntity
     {
         internal static (ulong? objectNo, int? hash, TypeCode typeCode) Make(object value)
         {
@@ -109,5 +108,7 @@ namespace Dynamit.ValueObjects
             }
             return o;
         }
+
+        public void OnDelete() { }
     }
 }

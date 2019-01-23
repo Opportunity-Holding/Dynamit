@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="Starcounter.Nova" Version="0.11.0-alpha-003229" />
+    <PackageReference Include="Starcounter.Nova" Version="0.12.0-alpha-003308" />
   </ItemGroup>
 
 </Project>

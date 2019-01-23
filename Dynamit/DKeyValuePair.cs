@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Dynamit.ValueObjects;
-using Starcounter;
 using Starcounter.Nova;
 using KVP = System.Collections.Generic.KeyValuePair<string, object>;
 
@@ -13,17 +12,17 @@ namespace Dynamit
     /// The abstract base class for DDictionary key-value pairs
     /// </summary>
     [Database]
-    public abstract class DKeyValuePair : IEntity
+    public abstract class DKeyValuePair : IDynamitEntity
     {
         /// <summary>
         /// The dictionary that this key-value pair belongs to
         /// </summary>
-        public DDictionary Dictionary { get; }
+        public DDictionary Dictionary { get; private set; }
 
         /// <summary>
         /// The key of the key-value pair
         /// </summary>
-        public string Key { get; }
+        public string Key { get; private set; }
 
         /// <summary>
         /// The hashcode of the value of the key-value pair
@@ -50,10 +49,10 @@ namespace Dynamit
         /// </summary>
         public string ValueString => GetValueObject()?.ToString() ?? "null";
 
-        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.FromId(ValueObjectNo.Value);
+        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.Get(ValueObjectNo.Value);
 
         /// <inheritdoc />
-        public void OnDelete() => ((object) GetValueObject())?.Delete();
+        public void OnDelete() => ((IDynamitEntity) GetValueObject())?.Delete();
 
         /// <summary>
         /// An operator for implicit conversion from a DKeyValuePair instance to a <see cref="KeyValuePair{TKey,TValue}"/>
@@ -78,12 +77,13 @@ namespace Dynamit
             }
         }
 
-        /// <inheritdoc />
-        protected DKeyValuePair(DDictionary dict, string key, object value = null)
+        protected static TKVP Create<TKVP>(DDictionary dict, string key, object value = null) where TKVP : DKeyValuePair
         {
-            Dictionary = dict;
-            Key = key;
-            Value = value;
+            var kvp = Db.Insert<TKVP>();
+            kvp.Dictionary = dict;
+            kvp.Key = key;
+            kvp.Value = value;
+            return kvp;
         }
     }
 }

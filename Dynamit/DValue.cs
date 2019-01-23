@@ -1,7 +1,6 @@
 ﻿using System;
 using Dynamit.ValueObjects;
 using Dynamit.ValueObjects.String;
-using Starcounter;
 using Starcounter.Nova;
 
 #pragma warning disable 1591
@@ -9,7 +8,7 @@ using Starcounter.Nova;
 namespace Dynamit
 {
     [Database]
-    public abstract class DValue : IEntity
+    public abstract class DValue : IDynamitEntity
     {
         public int? ValueHash { get; private set; }
         public TypeCode ValueTypeCode { get; private set; }
@@ -17,8 +16,8 @@ namespace Dynamit
 
         public string ValueType => GetValueObject()?.content?.GetType().FullName ?? "<value is null>";
         public string ValueString => GetValueObject()?.ToString() ?? "null";
-        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.FromId(ValueObjectNo.Value);
-        public void OnDelete() => ((object) GetValueObject())?.Delete();
+        private dynamic GetValueObject() => ValueObjectNo == null ? null : Db.Get(ValueObjectNo.Value);
+        public void OnDelete() => ((IDynamitEntity) GetValueObject())?.Delete();
 
         public dynamic Value
         {
@@ -53,6 +52,14 @@ namespace Dynamit
             }
         }
 
-        protected DValue(object value = null) => (ValueObjectNo, ValueHash, ValueTypeCode) = ValueObject.Make(value);
+        protected static T Create<T>(object value = null) where T : DValue
+        {
+            var val = Db.Insert<T>();
+            var (valueObjectNo, valueHash, valueTypeCode) = ValueObject.Make(value);
+            val.ValueObjectNo = valueObjectNo;
+            val.ValueHash = valueHash;
+            val.ValueTypeCode = valueTypeCode;
+            return val;
+        }
     }
 }

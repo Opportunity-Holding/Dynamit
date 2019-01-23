@@ -5,7 +5,6 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using Dynamit.ValueObjects;
-using Starcounter;
 using Starcounter.Nova;
 using static System.Dynamic.BindingRestrictions;
 using static System.Linq.Expressions.Expression;
@@ -22,7 +21,7 @@ namespace Dynamit
     /// </summary>
     [Database]
     public abstract class DDictionary : IDictionary<string, object>, ICollection<KVP>, IReadOnlyDictionary<string, object>, IReadOnlyCollection<KVP>,
-        IEnumerable<KVP>, IEnumerable, IEntity, IDynamicMetaObjectProvider
+        IEnumerable<KVP>, IEnumerable, IDynamitEntity, IDynamicMetaObjectProvider
     {
         /// <summary>
         /// The name of the table where key-value pairs are stored
@@ -116,7 +115,7 @@ namespace Dynamit
                     return false;
             }
         }
-
+        
         public dynamic this[string key]
         {
             get
@@ -172,7 +171,6 @@ namespace Dynamit
         public bool ContainsKey(string key) => TryGetValue(key, out _);
 
         public void Add(string key, object value) => Add(new KVP(key, value));
-        public void OnDelete() => Clear();
         public ICollection<string> Keys => KeyValuePairs.Select(i => i.Key).ToList();
         public ICollection<object> Values => KeyValuePairs.Select(i => i.Value).ToList();
         IEnumerable<string> IReadOnlyDictionary<string, object>.Keys => Keys;
@@ -197,6 +195,8 @@ namespace Dynamit
         {
             foreach (var pair in KeyValuePairs) pair.Delete();
         }
+
+        public void OnDelete() => Clear();
 
         /// <summary>
         /// Gets the value of a key from a DDictionary, or null if the dictionary does not contain the key.

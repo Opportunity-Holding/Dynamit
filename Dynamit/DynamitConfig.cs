@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Starcounter;
 using Starcounter.Nova;
 
 namespace Dynamit
@@ -62,11 +61,6 @@ namespace Dynamit
             var firstNested = pairs.FirstOrDefault(pair => pair.IsNested);
             if (firstNested != null)
                 throw new NestedDKeyValuePairDeclarationException(firstNested);
-            var lists = typeof(DList).GetConcreteSubclasses();
-            var listsWithMissingAttribute = lists.Where(d => d.GetAttribute<DListAttribute>() == null).ToList();
-            if (listsWithMissingAttribute.Any())
-                throw new DListException(listsWithMissingAttribute.First());
-            var elements = typeof(DElement).GetConcreteSubclasses();
             if (!setupIndexes)
             {
                 IsInitiated = true;
@@ -94,12 +88,6 @@ namespace Dynamit
                             break;
                     }
                 }
-            }
-            foreach (var element in elements)
-            {
-                CreateIndex(element, "List");
-                CreateIndex(element, "List", "Index");
-                CreateIndex(element, "List", "ValueHash");
             }
             IsInitiated = true;
         }

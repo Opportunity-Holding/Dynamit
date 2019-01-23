@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitExample", "DynamitExample\DynamitExample.csproj", "{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitTester", "DynamitTester\DynamitTester.csproj", "{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dynamit", "Dynamit\Dynamit.csproj", "{A3F83D79-075D-4754-83B7-BF8819A95407}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitExampleCore", "DynamitExampleCore\DynamitExampleCore.csproj", "{401D1C32-CFA9-4D85-8282-819F004D79E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamitTesterCore", "DynamitTesterCore\DynamitTesterCore.csproj", "{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,18 +17,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|x64.ActiveCfg = Debug|x64
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Debug|x64.Build.0 = Debug|x64
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|Any CPU.ActiveCfg = Release|x64
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|x64.ActiveCfg = Release|x64
-		{8BEE3F4C-96CA-4C2C-8D01-7314762A6A0A}.Release|x64.Build.0 = Release|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|x64.ActiveCfg = Debug|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Debug|x64.Build.0 = Debug|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|Any CPU.ActiveCfg = Release|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|x64.ActiveCfg = Release|x64
-		{4E4739B6-EE6F-4F5A-817C-27E729CDFAAA}.Release|x64.Build.0 = Release|x64
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -37,6 +25,22 @@ Global
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|x64.ActiveCfg = Release|Any CPU
 		{A3F83D79-075D-4754-83B7-BF8819A95407}.Release|x64.Build.0 = Release|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Debug|x64.Build.0 = Debug|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Release|x64.ActiveCfg = Release|Any CPU
+		{401D1C32-CFA9-4D85-8282-819F004D79E1}.Release|x64.Build.0 = Release|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Debug|x64.Build.0 = Debug|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Release|x64.ActiveCfg = Release|Any CPU
+		{E682A0F8-4E35-4F41-B3AC-309C56A4AAA5}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Starcounter;
 using Starcounter.Nova;
 using static System.StringComparison;
 using static Dynamit.Operator;
@@ -82,7 +81,7 @@ namespace Dynamit
                     {
                         var scConditions = GetScConditions(group);
                         if (scConditions.ObjectNo.HasValue && scConditions.WhereString == null)
-                            process(new[] {Db.FromId<T>(scConditions.ObjectNo.Value)});
+                            process(new[] {Db.Get<T>(scConditions.ObjectNo.Value)});
                         else process(Db.SQL<T>($"{StaticSelect} WHERE {scConditions.WhereString}", scConditions.Values));
                     }
                     else // Key matches dynamic member
@@ -164,19 +163,20 @@ namespace Dynamit
                             throw new Exception($"Invalid ObjectNo format. Should be positive integer, found {value ?? "null"}");
                         }
                     }
-                    if (string.Equals("objectid", key, OrdinalIgnoreCase))
-                    {
-                        try
-                        {
-                            var objectID = (string) value;
-                            objectNo = DbHelper.Base64DecodeObjectID(objectID);
-                            return null;
-                        }
-                        catch
-                        {
-                            throw new Exception($"Invalid ObjectID format. Should be base64 string, found {value}");
-                        }
-                    }
+                    // if (string.Equals("objectid", key, OrdinalIgnoreCase))
+                    // {
+                    //     try
+                    //     {
+                    //         var objectID = (string) value;
+                    //         Starcounter.Nova.Db.
+                    //         objectNo = DbHelper.Base64DecodeObjectID(objectID);
+                    //         return null;
+                    //     }
+                    //     catch
+                    //     {
+                    //         throw new Exception($"Invalid ObjectID format. Should be base64 string, found {value}");
+                    //     }
+                    // }
                 }
                 if (value == null)
                 {

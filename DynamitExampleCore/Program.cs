@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using Dynamit;
-using Starcounter;
+using Starcounter.Nova;
 using static Dynamit.Operator;
 
 // ReSharper disable All
@@ -18,20 +19,16 @@ namespace DynamitExample
             DynamitConfig.Init();
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
-            foreach (var x in Db.SQL<DList>($"SELECT t FROM {typeof(DList).FullName} t"))
-                Db.TransactAsync(() => x.Delete());
 
             Product product = null;
             Db.TransactAsync(() =>
             {
-                product = new Product
-                {
-                    ["Label"] = "Double Espresso",
-                    ["Product_ID"] = 42,
-                    ["Product_date"] = new DateTime(2017, 01, 05),
-                    ["Price"] = 3.25,
-                    ["Group"] = "A1"
-                };
+                product = Db.Insert<Product>();
+                product["Label"] = "Double Espresso";
+                product["Product_ID"] = 42;
+                product["Product_date"] = new DateTime(2017, 01, 05);
+                product["Price"] = 3.25;
+                product["Group"] = "A1";
             });
 
             var s = product["Product_date"].AddDays(2).ToString("O");
@@ -42,7 +39,7 @@ namespace DynamitExample
 
             Db.TransactAsync(() =>
             {
-                pr = new Product();
+                pr = Db.Insert<Product>();
                 pr.A = "My favourite";
                 pr.Aswoo = 123321.1;
                 pr.Goog = DateTime.Now;
@@ -71,17 +68,6 @@ namespace DynamitExample
                 .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
                 .Where(da => da.SafeGet("Price") > 3); // regular LINQ
 
-            DynamicList list;
-            Db.TransactAsync(() =>
-            {
-                list = new DynamicList
-                {
-                    "Showo",
-                    123321.1,
-                    DateTime.Now
-                };
-            });
-
             var xs = "";
 
             #endregion
@@ -90,7 +76,7 @@ namespace DynamitExample
 
             Db.TransactAsync(() =>
             {
-                prod1 = new DynamicProduct();
+                prod1 = Db.Insert<DynamicProduct>();
                 prod1.MyDynamicMember = "hej";
             });
             var s1 = prod1.MyDynamicMember;
@@ -102,12 +88,12 @@ namespace DynamitExample
     }
 
     [Database]
-    public class MyDbClass
+    public abstract class MyDbClass
     {
-        public string Mstr { get; set; }
-        public Other Myother { get; set; }
-        public Third Mythird => new Third();
-        public DynamicProduct Product { get; set; }
+        public virtual string Mstr { get; set; }
+        public virtual Other Myother { get; set; }
+        public virtual Third Mythird => new Third();
+        public virtual DynamicProduct Product { get; set; }
     }
 
     [Database]
@@ -116,64 +102,54 @@ namespace DynamitExample
     public class Third { }
 
     [Database]
-    public class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKVP>
+    public abstract class DynamicProduct : DDictionary, IDDictionary<DynamicProduct, DynamicProductKVP>
     {
         public DynamicProductKVP NewKeyPair(DynamicProduct dict, string key, object value = null)
         {
-            return new DynamicProductKVP(dict, key, value);
+            return DynamicProductKVP.Create(dict, key, value);
         }
     }
 
     [Database]
-    public class DynamicProductKVP : DKeyValuePair
+    public abstract class DynamicProductKVP : DKeyValuePair
     {
-        public DynamicProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
+        public static DynamicProductKVP Create(DynamicProduct dict, string key, object value)
+        {
+            return Create<DynamicProductKVP>(dict, key, value);
+        }
     }
 
     [Database]
-    public class Product : DDictionary, IDDictionary<Product, ProductKVP>
+    public abstract class Product : DDictionary, IDDictionary<Product, ProductKVP>
     {
         public ProductKVP NewKeyPair(Product dict, string key, object value = null)
         {
-            return new ProductKVP(dict, key, value);
+            return ProductKVP.Create(dict, key, value);
         }
     }
 
     [Database]
-    public class ProductKVP : DKeyValuePair
+    public abstract class ProductKVP : DKeyValuePair
     {
-        public ProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
-    }
-
-    [Database, DList(typeof(DynamicListElement))]
-    public class DynamicList : DList
-    {
-        protected override DElement NewElement(DList dict, int index, object value = null)
+        public static ProductKVP Create(Product dict, string key, object value)
         {
-            return new DynamicListElement(dict, index, value);
+            return Create<ProductKVP>(dict, key, value);
         }
     }
 
     [Database]
-    public class DynamicListElement : DElement
+    public abstract class Condition
     {
-        public DynamicListElement(DList list, int index, object value = null) : base(list, index, value) { }
-    }
-
-
-    [Database]
-    public class Condition : IEntity
-    {
-        public string PropertyName { get; set; }
+        public virtual string PropertyName { get; set; }
 
         //public OperatorsEnum Operator;
-        public ConditionValue Value { get; set; } // This is our DValue member
+        public virtual ConditionValue Value { get; set; } // This is our DValue member
 
         public void OnDelete() => Value?.Delete();
     }
 
     [Database]
-    public class ConditionValue : DValue
+    public abstract class ConditionValue : DValue
     {
         public ConditionValue(object value) => Value = value;
     }

@@ -6,7 +6,7 @@ using System.Linq;
 using Dynamit.ValueObjects;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Starcounter;
+using Starcounter.Nova;
 using static System.Diagnostics.Debug;
 using static Dynamit.Operator;
 
@@ -20,10 +20,24 @@ namespace DynamitTester
         {
             #region Initial boring stuff
 
+            string dbname = "Program_LocalDb3";
+
+            // Make sure we have a database, create one if not.
+            if (!Starcounter.Nova.Options.StarcounterOptions.TryOpenExisting(dbname))
+            {
+                System.IO.Directory.CreateDirectory(dbname);
+                Starcounter.Nova.Bluestar.ScCreateDb.Execute(dbname);
+            }
+
+            using (var appHost = new Starcounter.Nova.Hosting.AppHostBuilder()
+                .UseDatabase(dbname)
+                .Build())
+            {
+                appHost.Start();
+            }
+
             DynamitConfig.Init(enableEscapeStrings: true);
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
-                Db.TransactAsync(() => x.Delete());
-            foreach (var x in Db.SQL<DList>($"SELECT t FROM {typeof(DList).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
 
             #endregion
@@ -35,7 +49,7 @@ namespace DynamitTester
             MyDict myDict = null;
             Db.TransactAsync(() =>
             {
-                myDict = new MyDict();
+                myDict = Db.Insert<MyDict>();
                 dynamic d = myDict;
                 d.Id = 1;
                 d.Bool = true;
@@ -57,23 +71,20 @@ namespace DynamitTester
                 d.EmptyString = "";
                 d.JustAQuote = "\"";
 
-                new MyDict
-                {
-                    ["Id"] = 2,
-                    ["Byte"] = (byte) 12,
-                    ["String"] = "A",
-                    ["Bool"] = true,
-                    ["Goo"] = 123
-                };
+                var a = Db.Insert<MyDict>();
 
-                new MyDict
-                {
-                    Foo = "TheThird",
-                    ["Id"] = 3,
-                    ["Byte"] = (byte) 122,
-                    ["String"] = "A",
-                    ["Bool"] = true
-                };
+                a["Id"] = 2;
+                a["Byte"] = (byte) 12;
+                a["String"] = "A";
+                a["Bool"] = true;
+                a["Goo"] = 123;
+
+                var b = Db.Insert<MyDict>();
+                b.Foo = "TheThird";
+                b["Id"] = 3;
+                b["Byte"] = (byte) 122;
+                b["String"] = "A";
+                b["Bool"] = true;
             });
 
             Assert(!myDict.ContainsKey("Null"));
@@ -136,7 +147,11 @@ namespace DynamitTester
             Assert(arr.Count(a => a.Key != null) == myDict.KeyValuePairs.Count());
 
             MyDict testThingy = null;
-            Db.TransactAsync(() => testThingy = new MyDict {["Test"] = true});
+            Db.TransactAsync(() =>
+            {
+                testThingy = Db.Insert<MyDict>();
+                testThingy["Test"] = true;
+            });
             Assert(testThingy.Any());
             Db.TransactAsync(() => testThingy.Clear());
             Assert(!testThingy.Any());
@@ -160,8 +175,8 @@ namespace DynamitTester
             var alsoThird3 = Finder<MyDict>.Where("$Foo", EQUALS, "TheThird").FirstOrDefault();
             Assert(alsoThird.Equals(alsoThird3));
 
-            var objectNo = myDict.GetObjectNo();
-            var objectId = myDict.GetObjectID();
+            var objectNo = Db.GetOid(myDict);
+            var objectId = Db.GetOid(myDict);
             var _first = Finder<MyDict>.Where("$ObjectID", EQUALS, objectId).FirstOrDefault();
             var _first2 = Finder<MyDict>.Where("$ObjectNo", EQUALS, objectNo).FirstOrDefault();
             Assert(_first.Equals(_first2) && _first.Equals(myDict));
@@ -263,19 +278,22 @@ namespace DynamitTester
 
 
     [Database]
-    public class MyDict : DDictionary, IDDictionary<MyDict, MyDictKVP>
+    public abstract class MyDict : DDictionary, IDDictionary<MyDict, MyDictKVP>
     {
-        public string Foo { get; set; }
+        public virtual string Foo { get; set; }
 
         public MyDictKVP NewKeyPair(MyDict dict, string key, object value = null)
         {
-            return new MyDictKVP(dict, key, value);
+            return MyDictKVP.Create(dict, key, value);
         }
     }
 
     [Database]
-    public class MyDictKVP : DKeyValuePair
+    public abstract class MyDictKVP : DKeyValuePair
     {
-        public MyDictKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
+        public static MyDictKVP Create(MyDict dict, string key, object value)
+        {
+            return Create<MyDictKVP>(dict, key, value);
+        }
     }
 }

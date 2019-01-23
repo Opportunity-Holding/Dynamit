@@ -1,5 +1,4 @@
-﻿using Starcounter;
-using Starcounter.Nova;
+﻿using Starcounter.Nova;
 
 #pragma warning disable 1591
 

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Starcounter.Nova.AspNetCore" Version="0.12.0-alpha-003308" />
+    <PackageReference Include="Starcounter.Nova.Hosting" Version="0.12.0-alpha-003308" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Dynamit\Dynamit.csproj" />
+  </ItemGroup>
+
+</Project>
