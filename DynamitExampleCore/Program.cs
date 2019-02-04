@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using Dynamit;
 using Starcounter.Nova;
 using static Dynamit.Operator;
@@ -68,7 +67,6 @@ namespace DynamitExample
                 .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
                 .Where(da => da.SafeGet("Price") > 3); // regular LINQ
 
-            var xs = "";
 
             #endregion
 

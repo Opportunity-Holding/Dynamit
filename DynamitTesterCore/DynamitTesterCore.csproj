@@ -7,8 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Starcounter.Nova.AspNetCore" Version="0.12.0-alpha-003308" />
-    <PackageReference Include="Starcounter.Nova.Hosting" Version="0.12.0-alpha-003308" />
+    <PackageReference Include="Starcounter.Nova.Hosting" Version="0.12.0-alpha-003355" />
   </ItemGroup>
 
   <ItemGroup>
