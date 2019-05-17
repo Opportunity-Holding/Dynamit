@@ -18,9 +18,7 @@ namespace DynamitExample
             DynamitConfig.Init();
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
-            foreach (var x in Db.SQL<DList>($"SELECT t FROM {typeof(DList).FullName} t"))
-                Db.TransactAsync(() => x.Delete());
-
+            
             Product product = null;
             Db.TransactAsync(() =>
             {
@@ -70,17 +68,6 @@ namespace DynamitExample
             Finder<Product>
                 .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
                 .Where(da => da.SafeGet("Price") > 3); // regular LINQ
-
-            DynamicList list;
-            Db.TransactAsync(() =>
-            {
-                list = new DynamicList
-                {
-                    "Showo",
-                    123321.1,
-                    DateTime.Now
-                };
-            });
 
             var xs = "";
 
@@ -144,22 +131,6 @@ namespace DynamitExample
     {
         public ProductKVP(DDictionary dict, string key, object value = null) : base(dict, key, value) { }
     }
-
-    [Database, DList(typeof(DynamicListElement))]
-    public class DynamicList : DList
-    {
-        protected override DElement NewElement(DList dict, int index, object value = null)
-        {
-            return new DynamicListElement(dict, index, value);
-        }
-    }
-
-    [Database]
-    public class DynamicListElement : DElement
-    {
-        public DynamicListElement(DList list, int index, object value = null) : base(list, index, value) { }
-    }
-
 
     [Database]
     public class Condition : IEntity

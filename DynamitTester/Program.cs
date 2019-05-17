@@ -21,11 +21,10 @@ namespace DynamitTester
             #region Initial boring stuff
 
             DynamitConfig.Init(enableEscapeStrings: true);
+
             foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
                 Db.TransactAsync(() => x.Delete());
-            foreach (var x in Db.SQL<DList>($"SELECT t FROM {typeof(DList).FullName} t"))
-                Db.TransactAsync(() => x.Delete());
-
+            
             #endregion
 
             // TEST BEGIN
