@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 
 namespace Dynamit
@@ -13,9 +12,9 @@ namespace Dynamit
             return baseType.GetSubclasses().Where(type => !type.IsAbstract).ToList();
         }
 
-        private static IEnumerable<Type> GetSubclasses(this Type baseType)
-        {
-            return AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly =>
+        private static IEnumerable<Type> GetSubclasses(this Type baseType) => AppDomain.CurrentDomain
+            .GetAssemblies()
+            .SelectMany(assembly =>
             {
                 try
                 {
@@ -25,13 +24,8 @@ namespace Dynamit
                 {
                     return new Type[0];
                 }
-            }).Where(type => type.IsSubclassOf(baseType));
-
-//            return from assembly in AppDomain.CurrentDomain.GetAssemblies()
-//                from type in assembly.GetTypes()
-//                where type.IsSubclassOf(baseType)
-//                select type;
-        }
+            })
+            .Where(type => type.IsSubclassOf(baseType));
 
         internal static TAttribute GetAttribute<TAttribute>(this MemberInfo type) where TAttribute : Attribute
         {

@@ -38,38 +38,12 @@ namespace Dynamit
 
         static DynamitConfig()
         {
-            try
-            {
-                Dicts = typeof(DDictionary).GetConcreteSubclasses();
-                var kvpMappings = new Dictionary<string, string>();
-                foreach (var dict in Dicts)
-                    kvpMappings[dict.FullName ?? throw new Exception()] =
-                        dict.GetInterface(typeof(IDDictionary<,>).FullName)?.GetGenericArguments()[1].FullName;
-                KvpMappings = kvpMappings;
-                //The code that causes the error goes here.
-            }
-            catch (ReflectionTypeLoadException ex)
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach (Exception exSub in ex.LoaderExceptions)
-                {
-                    sb.AppendLine(exSub.Message);
-                    FileNotFoundException exFileNotFound = exSub as FileNotFoundException;
-                    if (exFileNotFound != null)
-                    {
-                        if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
-                        {
-                            sb.AppendLine("Fusion Log:");
-                            sb.AppendLine(exFileNotFound.FusionLog);
-                        }
-                    }
-                    sb.AppendLine();
-                }
-                string errorMessage = sb.ToString();
-                var a = "";
-                //Display or log the error based on your application.
-            }
-
+            Dicts = typeof(DDictionary).GetConcreteSubclasses();
+            var kvpMappings = new Dictionary<string, string>();
+            foreach (var dict in Dicts)
+                kvpMappings[dict.FullName ?? throw new Exception()] =
+                    dict.GetInterface(typeof(IDDictionary<,>).FullName)?.GetGenericArguments()[1].FullName;
+            KvpMappings = kvpMappings;
         }
 
         /// <summary>
