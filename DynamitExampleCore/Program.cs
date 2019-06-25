@@ -15,73 +15,80 @@ namespace DynamitExample
         {
             #region
 
-            DynamitConfig.Init();
-            foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
-                Db.TransactAsync(() => x.Delete());
-
-            Product product = null;
-            Db.TransactAsync(() =>
+            using (var appHost = new Starcounter.Nova.Hosting.AppHostBuilder().Build().Start())
             {
-                product = Db.Insert<Product>();
-                product["Label"] = "Double Espresso";
-                product["Product_ID"] = 42;
-                product["Product_date"] = new DateTime(2017, 01, 05);
-                product["Price"] = 3.25;
-                product["Group"] = "A1";
-            });
+                DynamitConfig.Init(enableEscapeStrings: true);
+                foreach (var x in Db.SQL<DDictionary>($"SELECT t FROM {typeof(DDictionary).FullName} t"))
+                    Db.TransactAsync(() => x.Delete());
 
-            var s = product["Product_date"].AddDays(2).ToString("O");
+                Product product = null;
+                Db.TransactAsync(() =>
+                {
+                    product = Db.Insert<Product>();
+                    product["Label"] = "Double Espresso";
+                    product["Product_ID"] = 42;
+                    product["Product_date"] = new DateTime(2017, 01, 05);
+                    product["Price"] = 3.25;
+                    product["Group"] = "A1";
+                });
 
-            var sdsa = Finder<Product>.All;
+                var s = product["Product_date"].AddDays(2).ToString("O");
 
-            dynamic pr = null;
+                var sdsa = Finder<Product>.All;
 
-            Db.TransactAsync(() =>
-            {
-                pr = Db.Insert<Product>();
-                pr.A = "My favourite";
-                pr.Aswoo = 123321.1;
-                pr.Goog = DateTime.Now;
-            });
+                dynamic pr = null;
 
-            dynamic dsa = product;
-            var dx = dsa.Label;
+                Db.TransactAsync(() =>
+                {
+                    pr = Db.Insert<Product>();
+                    pr.A = "My favourite";
+                    pr.Aswoo = 123321.1;
+                    pr.Goog = DateTime.Now;
+                });
 
-            var g = dsa.Product_date.AddDays(1).ToString();
+                dynamic dsa = product;
+                var dx = dsa.Label;
 
-            var xas = Finder<Product>.All.Where(ob => ob["Product_ID"] == 42);
+                var g = dsa.Product_date.AddDays(1).ToString();
 
-            Db.TransactAsync(() => dsa.Banana = 123123.1);
+                var xas = Finder<Product>.All.Where(ob => ob["Product_ID"] == 42);
 
-            var o = product is IDictionary<string, dynamic>;
+                Db.TransactAsync(() => dsa.Banana = 123123.1);
 
-            //var sdsa = Finder<DynamicProduct>
-            //    .Where(new Conditions {["Group", EQUALS] = "A1"})
-            //    .Where(da => da.SafeGet("Price") > 3);
+                var o = product is IDictionary<string, dynamic>;
 
-            var prod = Finder<Product>.First(("Product_ID", EQUALS, 42), ("Price", EQUALS, 3.25));
+                //var sdsa = Finder<DynamicProduct>
+                //    .Where(new Conditions {["Group", EQUALS] = "A1"})
+                //    .Where(da => da.SafeGet("Price") > 3);
 
-            var c = prod["Product_ID"];
+                var prod = Finder<Product>.First(("Product_ID", EQUALS, 42), ("Price", EQUALS, 3.25));
 
-            Finder<Product>
-                .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
-                .Where(da => da.SafeGet("Price") > 3); // regular LINQ
+                var c = prod["Product_ID"];
+
+                Finder<Product>
+                    .Where(("Group", EQUALS, "A1")) // C#7 ValueTuple literal
+                    .Where(da => da.SafeGet("Price") > 3); // regular LINQ
+
+                var xs = "";
+
+                #endregion
+
+                dynamic prod1 = null;
+
+                Db.TransactAsync(() =>
+                {
+                    prod1 = Db.Insert<DynamicProduct>();
+                    prod1.MyDynamicMember = "hej";
+                });
+                var s1 = prod1.MyDynamicMember;
+
+                var le = s1.Length;
+
+                Finder<DynamicProduct>.Where("MyDynamicMember", EQUALS, "hej");
 
 
-            #endregion
-
-            dynamic prod1 = null;
-
-            Db.TransactAsync(() =>
-            {
-                prod1 = Db.Insert<DynamicProduct>();
-                prod1.MyDynamicMember = "hej";
-            });
-            var s1 = prod1.MyDynamicMember;
-
-            var le = s1.Length;
-
-            Finder<DynamicProduct>.Where("MyDynamicMember", EQUALS, "hej");
+                var a = "";
+            }
         }
     }
 
@@ -95,7 +102,7 @@ namespace DynamitExample
     }
 
     [Database]
-    public class Other { }
+    public abstract class Other { }
 
     public class Third { }
 
@@ -133,22 +140,5 @@ namespace DynamitExample
         {
             return Create<ProductKVP>(dict, key, value);
         }
-    }
-
-    [Database]
-    public abstract class Condition
-    {
-        public virtual string PropertyName { get; set; }
-
-        //public OperatorsEnum Operator;
-        public virtual ConditionValue Value { get; set; } // This is our DValue member
-
-        public void OnDelete() => Value?.Delete();
-    }
-
-    [Database]
-    public abstract class ConditionValue : DValue
-    {
-        public ConditionValue(object value) => Value = value;
     }
 }

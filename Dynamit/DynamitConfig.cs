@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Starcounter.Nova;
 
@@ -55,7 +54,10 @@ namespace Dynamit
         {
             if (IsInitiated) return;
             EscapeStrings = enableEscapeStrings;
-            var dictsWithMissingInterface = Dicts.Where(d => d.GetInterface("IDDictionary`2") == null).ToList();
+            var dictsWithMissingInterface = Dicts
+                .Where(d => d.BaseType != typeof(DDictionary))
+                .Where(d => d.GetInterface("IDDictionary`2") == null)
+                .ToList();
             if (dictsWithMissingInterface.Any())
                 throw new MissingIDDictionaryException(dictsWithMissingInterface.First());
             var pairs = typeof(DKeyValuePair).GetConcreteSubclasses();
